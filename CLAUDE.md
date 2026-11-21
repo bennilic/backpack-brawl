@@ -110,11 +110,19 @@ Rules for the diary:
 
 ## Rule 4: Git usage (graded together with the diary)
 
+- **Pull-request workflow (mandatory):** never commit or push directly to the default branch (`master`). For every change: create a short-lived branch from an up-to-date `master` (`<type>/<short-description>`, for example `feat/b1-sell-items`, `docs/diary-draft`), commit there, push, and open a pull request against `master`. One PR covers one logical change or requirement. The other team member reviews and approves; the author does not merge their own PR without that review. Claude opens PRs but never merges them. Prefer squash-free merges or keep commits meaningful, since the history is assessed.
+- **Every PR must also:** add entries to `CHANGELOG.md` under *Unreleased* (see Rule 5), add an entry to `DECISIONS.md` if it contains a significant decision, and pass `pnpm lint`, `pnpm test` and `pnpm build`.
 - Work in small, meaningful commits that each describe one logical change. Commit history is part of the assessment, so avoid giant "everything" commits and avoid rewriting history that is already pushed.
 - Suggested commit message format (the team may change it, then update this line): `B<n> | short summary`, for example `B5 | Ignore late opponent responses`. Use `Docs |` or `Chore |` for work outside a requirement.
 - Both team members commit under their own Git identity so that contributions are visible.
 - Remotes: `origin` is the team repository (`bennilic/backpack-brawl`), `upstream` is the course parent repo (`leonardo1710/backpack-brawl`). Push to `origin` only; never push to `upstream`. Fetch from `upstream` only if the lecturers announce changes to the starter.
 - The global rules about Jira, `pj-a0` and `lyra/<ticket>` branch names do not apply to this repository.
+
+## Rule 5: CHANGELOG.md and DECISIONS.md
+
+- `CHANGELOG.md` records every notable change, newest first, under *Unreleased*, with the requirement ID (B1–B7) and PR number where known. Update it in the same PR as the change.
+- `DECISIONS.md` records significant decisions using the template at the top of that file (context, options, decision, reasons and trade-offs, evidence). Entries are append-only; a changed decision gets a new entry that supersedes the old one.
+- The `DIARY.md` section *Important Decisions* is built from `DECISIONS.md`; keep the two consistent.
 
 ## Working together and portability
 
