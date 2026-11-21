@@ -69,8 +69,8 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
 ## D-005: Co-located `*.test.ts` unit tests with Vitest, written for the requirements
 - **Date:** 2026-11-21
 - **Status:** Accepted
-- **Requirement:** qualitative (QG1)
-- **Context:** QG1 requires unit tests. Vitest is already part of the starter, but the course manuscript does not teach testing (it only names tests as a quality gate in ch. 7 and 11).
+- **Requirement:** qualitative (G1)
+- **Context:** G1 requires unit tests. Vitest is already part of the starter, but the course manuscript does not teach testing (it only names tests as a quality gate in ch. 7 and 11).
 - **Decision:**
   - Tests are co-located as `*.test.ts` files next to the code they test, on the server and in the frontend, so they are easy to find.
   - Apart from the examples in the PR that introduces them, unit tests are only written for functionality in `REQUIREMENTS.md`.
@@ -82,7 +82,7 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
 ## D-006: Write the server in TypeScript and share types with the frontend
 - **Date:** 2026-11-21
 - **Status:** Proposed (needs agreement on the new dev dependencies, see Rule 1)
-- **Requirement:** qualitative (QG2); affects B5 and B7
+- **Requirement:** qualitative (G2); affects B5 and B7
 - **Context:** The shape of an opponent is described twice: in `src/types.ts` and, implicitly, in `server/opponents.js`. A mismatch is only found at runtime. B7 adds more shared shapes (a finished run, a hall-of-fame entry).
 - **Decision:** The server (`server/`) is migrated to TypeScript. Client and server share their API types through type-only imports (starting with `Opponent`; the hall-of-fame types follow with B7). `server/` is added to the type-check (`tsc -b`). The migration is its own PR and happens before B5 and B7 start, so the two requirements are built on the typed server. Details to settle in that PR: running `.ts` with Node's built-in TypeScript support (and raising the documented Node version) or with a runner, and the dev dependencies `@types/express` and `@types/cors`.
 - **Reason / trade-offs:** If an API shape changes, the compiler flags every place that uses it on both sides (manuscript ch. 10). Types are erased at runtime, so the server still validates every incoming request (ch. 10.16, 24.4). The cost is a one-time migration, the new dev dependencies (they add no runtime code) and possibly a higher minimum Node version.
