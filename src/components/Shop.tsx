@@ -1,17 +1,30 @@
 import { getItem } from "../items";
-import { buyBlocker } from "../run";
+import { buyBlocker, REROLL_COST, rerollBlocker } from "../run";
 import type { RunState } from "../types";
 import { ItemCard } from "./ItemCard";
 
 interface ShopProps {
   run: RunState;
   onBuy: (offerIndex: number) => void;
+  onReroll: () => void;
 }
 
-export function Shop({ run, onBuy }: ShopProps) {
+export function Shop({ run, onBuy, onReroll }: ShopProps) {
+  const rerollBlock = rerollBlocker(run);
   return (
     <section className="rounded-lg border border-panel-edge bg-panel p-4">
-      <h2 className="mb-3 font-display text-xl font-bold">🏪 Shop</h2>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h2 className="font-display text-xl font-bold">🏪 Shop</h2>
+        <button
+          type="button"
+          onClick={onReroll}
+          disabled={rerollBlock !== null}
+          title={rerollBlock ?? `Roll ${run.shop.length} new offers`}
+          className="rounded-md bg-gold px-3 py-1.5 text-sm font-bold text-ink hover:brightness-110 disabled:bg-panel-edge disabled:text-muted"
+        >
+          {rerollBlock ?? `🔄 Reroll for ${REROLL_COST} 🪙`}
+        </button>
+      </div>
       <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {run.shop.map((itemId, index) => {
           if (!itemId) {
