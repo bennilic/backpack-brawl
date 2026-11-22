@@ -100,7 +100,7 @@ Unit tests use [Vitest](https://vitest.dev/). Each test file sits next to the co
 
 Test names tell you what a test is for:
 - `ex:` marks an example that only shows how to write a test (`src/run.test.ts` for the shop rules, `server/opponents.test.ts` for the API's opponent rules).
-- `fr1:`, `fr2:`, ... mark tests for a functional requirement, where the number is the requirement ID (`fr1:` = B1, `fr2:` = B2, ...).
+- `B1:`, `B2:`, ... mark tests for a functional requirement. The prefix is the requirement ID from `REQUIREMENTS.md`.
 
 `server/index.js` starts a server as soon as it is imported, so server tests target the pure modules next to it.
 

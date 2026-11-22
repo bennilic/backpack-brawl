@@ -15,7 +15,7 @@ import { BACKPACK_SIZE, rollShop } from "./shop";
 import type { RunState } from "./types";
 
 // `describe(name, fn)` groups related tests. The name shows up in the test output, so it is
-// prefixed with "ex:" to mark this as an example (tests for a requirement start with "fr1:", ...).
+// prefixed with "ex:" to mark this as an example (tests for a requirement start with "B1:", ...).
 describe("ex: buyItem", () => {
   // `it(name, fn)` is ONE test. Read the name as a sentence: "it pays the price and ...".
   // The test fails if an `expect` inside does not hold, or if the code throws an error.
@@ -74,7 +74,7 @@ function runWithBackpack(itemIds: string[], gold = START_GOLD): RunState {
   return { ...run, gold, backpack };
 }
 
-describe("fr1: sellItem", () => {
+describe("B1: sellItem", () => {
   it.each([
     ["chipped-dagger", 1],
     ["oak-buckler", 1],
@@ -128,7 +128,7 @@ describe("fr1: sellItem", () => {
   });
 });
 
-describe("fr1: rerollShop", () => {
+describe("B1: rerollShop", () => {
   it("pays the reroll price and rolls new offers from the run's seed", () => {
     const run = newRun(1);
     const expectedRoll = rollShop(run.seed);
@@ -165,7 +165,7 @@ describe("fr1: rerollShop", () => {
   });
 });
 
-describe("fr1: buyItem keeps gold and items consistent", () => {
+describe("B1: buyItem keeps gold and items consistent", () => {
   it("never lets gold drop below zero", () => {
     let run = { ...newRun(1), gold: 3 };
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { newGame, updateRun } from "./game";
 import { rerollShop, sellItem } from "./run";
 
-describe("fr1: shop and backpack actions only while shopping", () => {
+describe("B1: shop and backpack actions only while shopping", () => {
   it.each(["searching", "battle", "finished"] as const)("ignores shop actions in the %s phase", (phase) => {
     const game = { ...newGame(1), phase };
 
