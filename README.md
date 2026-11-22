@@ -69,7 +69,7 @@ Items have no sets and no other effects. The "How it works" panel in the shop su
 - Tooltips and a rules panel explaining every mechanic.
 - A responsive React interface styled with Tailwind CSS.
 
-The starter does **not** include any automated tests. Vitest is installed and configured; add your own tests as `*.test.ts` files next to the code they test.
+Unit tests use Vitest and live next to the code they test (see [Tests](#tests)); `src/run.test.ts` is an example.
 
 ## Run locally
 
@@ -88,8 +88,55 @@ The web app runs at `http://localhost:5174`; its API runs at `http://localhost:4
 | `pnpm server` | Start only the API on port 4200 |
 | `pnpm build` | Type-check and create a production frontend build |
 | `pnpm lint` | Run ESLint over the project |
-| `pnpm test` | Run all Vitest tests once (there are none yet) |
+| `pnpm test` | Run all Vitest tests once |
 | `pnpm preview` | Preview a previously created production build |
+
+## Tests
+
+Unit tests use [Vitest](https://vitest.dev/). Each test file sits next to the code it tests and is named `<module>.test.ts`, in the frontend (`src/`) and on the server (`server/`) alike. Vitest runs every file whose name contains `.test.`. Apart from the examples, unit tests are only written for functionality in `REQUIREMENTS.md` (see `DECISIONS.md` D-005).
+
+Test names tell you what a test is for:
+- `ex:` marks an example that only shows how to write a test (`src/run.test.ts` for the shop rules, `server/opponents.test.ts` for the API's opponent rules).
+- `B1:`, `B2:`, ... mark tests for a functional requirement. The prefix is the requirement ID from `REQUIREMENTS.md`.
+
+`server/index.js` starts a server as soon as it is imported, so server tests target the pure modules next to it.
+
+```bash
+pnpm test                          # run all tests once
+pnpm test src/run.test.ts          # run a single test file
+pnpm exec vitest                   # watch mode: re-run tests when files change
+```
+
+### How a test works
+
+A unit test calls one small piece of code with a prepared input and checks the result. If a later change makes the result differ, the test turns red and shows what was expected and what was received. Every test follows three steps:
+
+1. **Arrange:** prepare the input, e.g. `const run = newRun(1)`.
+2. **Act:** call the code under test once, e.g. `const after = buyItem(run, 0)`.
+3. **Assert:** compare the result with what you expect, e.g. `expect(after.gold).toBe(5)`.
+
+The three building blocks come from `vitest`:
+
+| Block | Meaning |
+|---|---|
+| `describe("name", () => { ... })` | Groups related tests under one name. |
+| `it("does something", () => { ... })` | One single test. It fails if an `expect` does not hold or the code throws. |
+| `expect(actual).toBe(expected)` | Checks a result. `toBe` demands the same value or the very same object, `toEqual` compares the content of objects, `toBeNull`, `toHaveLength(n)` and the like cover special cases. |
+
+Because the game rules are pure functions (a state goes in, a new state comes out, nothing else happens), they need no setup, no browser and no server to be tested. The two example files explain every line in comments, so start with `src/run.test.ts`.
+
+A minimal test looks like this:
+
+```ts
+import { describe, expect, it } from "vitest";
+import { buyItem, newRun } from "./run";
+
+describe("ex: buyItem", () => {
+  it("empties the bought shop slot", () => {
+    expect(buyItem(newRun(1), 0).shop[0]).toBeNull();
+  });
+});
+```
 
 ## API
 
