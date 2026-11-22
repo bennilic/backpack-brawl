@@ -74,7 +74,7 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
 - **Decision:**
   - Tests are co-located as `*.test.ts` files next to the code they test, on the server and in the frontend, so they are easy to find.
   - Apart from the examples in the PR that introduces them, unit tests are only written for functionality in `REQUIREMENTS.md`.
-  - Examples are marked with the prefix `ex:` in their `describe` name. Tests for a functional requirement carry the prefix `fr<n>:`, where `<n>` is the requirement number (`fr1:` for B1, `fr2:` for B2, and so on).
+  - Examples are marked with the prefix `ex:` in their `describe` name. Tests for a functional requirement carry the requirement ID from `REQUIREMENTS.md` as prefix (`B1:`, `B2:`, and so on).
   - Tests use only `describe`, `it` and `expect` from Vitest. `--passWithNoTests` stays as it is.
 - **Reason / trade-offs:** Vitest is already installed and shares the Vite config, so there is no new dependency. Co-location and the prefixes make it visible which tests are examples and which prove a requirement. The cost is that testing goes beyond the manuscript, so the subset is kept small, and that code outside `REQUIREMENTS.md` is not covered on purpose.
 - **Evidence:** `src/run.test.ts`, `server/opponents.test.ts`, `README.md` section *Tests*.

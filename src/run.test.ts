@@ -13,7 +13,7 @@ import { getItem } from "./items";
 import { buyBlocker, buyItem, newRun, START_GOLD } from "./run";
 
 // `describe(name, fn)` groups related tests. The name shows up in the test output, so it is
-// prefixed with "ex:" to mark this as an example (tests for a requirement start with "fr1:", ...).
+// prefixed with "ex:" to mark this as an example (tests for a requirement start with "B1:", ...).
 describe("ex: buyItem", () => {
   // `it(name, fn)` is ONE test. Read the name as a sentence: "it pays the price and ...".
   // The test fails if an `expect` inside does not hold, or if the code throws an error.
