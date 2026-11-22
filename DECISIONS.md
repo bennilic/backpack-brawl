@@ -49,22 +49,22 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
 
 ## D-004: Split the requirements between the team members
 - **Date:** 2026-11-21
-- **Status:** Proposed (names to be assigned)
+- **Status:** Accepted
 - **Requirement:** process (B1–B7)
 - **Context:** Two people work in one repository and both must be able to defend the whole solution in the exam. Some requirements change the same files, so the work is split into two clusters that touch different files.
 - **Decision:** The requirements are split 50/50 by weight:
 
   | | Requirements | Weight | Main files |
   |---|---|---:|---|
-  | **Person A (name TBD): battle and items** | B3 status effects, B4 item sets and Burn, B2 backpack arrangement | 15 + 20 + 15 = 50% | `battle.ts`, `items.ts`, `types.ts`, `rules.ts`, `BattleView`, `Backpack.tsx` |
-  | **Person B (name TBD): run flow and API** | B1 shop economy, B5 matchmaking, B6 save and resume, B7 hall of fame | 10 + 10 + 10 + 20 = 50% | `run.ts`, `game.ts`, `GameProvider`, `api.ts`, `server/`, `docs/API.md`, a new page |
+  | **Person A (David): battle and items** | B3 status effects, B4 item sets and Burn, B2 backpack arrangement | 15 + 20 + 15 = 50% | `battle.ts`, `items.ts`, `types.ts`, `rules.ts`, `BattleView`, `Backpack.tsx` |
+  | **Person B (Benjamin): run flow and API** | B1 shop economy, B5 matchmaking, B6 save and resume, B7 hall of fame | 10 + 10 + 10 + 20 = 50% | `run.ts`, `game.ts`, `GameProvider`, `api.ts`, `server/`, `docs/API.md`, a new page |
 
-  - Order: Person A does B3, B4, B2. Person B does B1, B5, B6, B7.
+  - Order: David (Person A) does B3, B4, B2. Benjamin (Person B) does B1, B5, B6, B7.
   - B3 and B4 stay together because Burn reuses the status mechanism of poison and heal. B5, B6 and B7 stay together because they share the game state and the API.
   - The only overlap is B1 and B2 (`Backpack.tsx`, `run.ts`): B1 is merged first, B2 is rebased on it.
   - Before the exam each person walks the other through their cluster.
 - **Reason / trade-offs:** Few shared files means few merge conflicts and clear ownership. The cost is that each person knows the other's cluster less well, which the PR reviews (D-002) and the walkthrough compensate for.
-- **Evidence:** PR (to be added), `REQUIREMENTS.md` weights.
+- **Evidence:** PR #2, `REQUIREMENTS.md` weights.
 
 ## D-005: Co-located `*.test.ts` unit tests with Vitest, written for the requirements
 - **Date:** 2026-11-21
