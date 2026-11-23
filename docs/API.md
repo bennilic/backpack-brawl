@@ -1,6 +1,6 @@
 # Backpack Brawl API
 
-The local API is a small Express server in `server/index.js`. It listens on port 4200 (override with the `PORT` environment variable). During Vite development, `/api` is proxied to it, so the frontend uses relative URLs such as `/api/opponents?round=1`. All responses are JSON. Opponents are stateless; only the hall of fame (below) keeps state, in server memory, and loses it on restart. Request bodies are limited to 2 kB.
+The local API is a small Express server in `server/index.js`. It listens on port 4200 (override with the `PORT` environment variable). During Vite development, `/api` is proxied to it, so the frontend uses relative URLs such as `/api/opponents?round=1`. All responses are JSON. Opponents are stateless; only the hall of fame (below) keeps state, in server memory, and loses it on restart. Request bodies are limited to 2 kB. The server listens on `127.0.0.1` only, and browsers may call it cross-origin only from `http://localhost:5174` (the Vite dev server, which proxies `/api`).
 
 ## `GET /api/health`
 
@@ -110,7 +110,7 @@ The server accepts only runs the game can produce: either `wins` = 5 and `lives`
 | 409 | The `runId` exists with different data | `{ "error": "…" }` |
 | 413 | Body larger than 2 kB | `{ "error": "Request body too large (limit 2 kB)." }` |
 
-`rank` is `null` when the hall holds 1000 runs and the new run ranks below all of them (it is accepted but not kept). At most 1000 runs are stored.
+`rank` is `null` when the hall holds 1000 runs and the new run ranks below all of them (it is accepted but not kept). At most 1000 runs are stored. Duplicate detection (200 / 409) only covers stored runs: a run that missed the cut or was later pushed out of the 1000 is forgotten and can be submitted again.
 
 ## Environment variables
 

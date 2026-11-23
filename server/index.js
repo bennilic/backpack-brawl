@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import { createHallOfFame, parseLimit, publicEntry, validateRun, MAX_LIMIT } from "./hallOfFame.js";
+import { createHallOfFame, errorResponseFor, parseLimit, publicEntry, validateRun, MAX_LIMIT } from "./hallOfFame.js";
 import { opponentForRound, parseRound } from "./opponents.js";
 
 const app = express();
@@ -9,7 +9,8 @@ const port = Number(process.env.PORT ?? 4200);
 const hallOfFame = createHallOfFame();
 
 // A run submission is a few dozen bytes; 2 kB leaves room and rejects anything abusive early.
-app.use(cors()); app.use(express.json({ limit: "2kb" }));
+// Only the Vite dev origin may call the API from a browser; the proxy makes CORS unnecessary for the app itself.
+app.use(cors({ origin: "http://localhost:5174" })); app.use(express.json({ limit: "2kb" }));
 app.get("/api/health", (_req, res) => res.json({ ok: true, service: "backpack-brawl" }));
 
 app.get("/api/opponents", (req, res) => {
@@ -45,9 +46,9 @@ app.post("/api/hall-of-fame", (req, res) => {
 // Body-parser failures (bad JSON, body too large) would otherwise produce an HTML error page.
 app.use((err, _req, res, next) => {
   if (res.headersSent) return next(err);
-  const status = typeof err.status === "number" && err.status >= 400 && err.status < 500 ? err.status : 500;
-  const message = status === 413 ? "Request body too large (limit 2 kB)." : status === 500 ? "Internal server error." : "Request body is not valid JSON.";
+  const { status, message } = errorResponseFor(err);
   res.status(status).json({ error: message });
 });
 
-app.listen(port, () => console.log(`Backpack Brawl API listening on http://localhost:${port}`));
+// Loopback only: the API has no authentication, so it must not be reachable from the LAN.
+app.listen(port, "127.0.0.1", () => console.log(`Backpack Brawl API listening on http://127.0.0.1:${port}`));

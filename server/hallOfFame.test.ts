@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { runIdFor } from "../src/hallOfFame";
 import { applyBattleResult, newRun } from "../src/run";
-import { compareEntries, createHallOfFame, parseLimit, validateRun, MAX_LIMIT } from "./hallOfFame.js";
+import { compareEntries, errorResponseFor, createHallOfFame, parseLimit, validateRun, MAX_LIMIT } from "./hallOfFame.js";
 
 const victory = { runId: "run-0001-aaaa", name: "Ada", wins: 5, lives: 2, rounds: 6 };
 const defeat = { runId: "run-0002-bbbb", name: "Bob", wins: 3, lives: 0, rounds: 6 };
@@ -136,5 +136,23 @@ describe("B7: client run data matches the server's plausibility rules", () => {
     const run = winners.reduce((state, winner) => applyBattleResult(state, winner), newRun(7));
     const payload = { runId: runIdFor(run), name: "Ada", wins: run.wins, lives: run.lives, rounds: run.round };
     expect(validateRun(payload).error).toBeUndefined();
+  });
+});
+
+describe("B7: errorResponseFor", () => {
+  it("calls only a parse failure invalid JSON", () => {
+    expect(errorResponseFor({ status: 400, type: "entity.parse.failed" })).toEqual({ status: 400, message: "Request body is not valid JSON." });
+  });
+  it("explains 413 and 415", () => {
+    expect(errorResponseFor({ status: 413, type: "entity.too.large" }).message).toMatch(/too large/);
+    expect(errorResponseFor({ status: 415, type: "charset.unsupported" }).message).toMatch(/UTF-8 JSON/);
+  });
+  it("uses a generic message for other 4xx errors", () => {
+    expect(errorResponseFor({ status: 400, type: "request.aborted" })).toEqual({ status: 400, message: "Request body could not be read; resend it." });
+  });
+  it("keeps 5xx and unknown errors generic", () => {
+    expect(errorResponseFor({ status: 503, message: "secret detail" })).toEqual({ status: 500, message: "Internal server error." });
+    expect(errorResponseFor(new Error("secret detail")).message).toBe("Internal server error.");
+    expect(errorResponseFor(undefined).status).toBe(500);
   });
 });

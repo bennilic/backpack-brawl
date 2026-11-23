@@ -128,3 +128,16 @@ export function createHallOfFame(maxEntries = MAX_STORED_ENTRIES) {
     },
   };
 }
+
+/**
+ * Maps an error thrown by the body parser to the HTTP status and message we send.
+ * Only a real parse failure is called "not valid JSON"; 5xx details are never exposed.
+ */
+export function errorResponseFor(err) {
+  const status = typeof err?.status === "number" && err.status >= 400 && err.status < 500 ? err.status : 500;
+  if (status === 500) return { status, message: "Internal server error." };
+  if (status === 413) return { status, message: "Request body too large (limit 2 kB)." };
+  if (status === 415) return { status, message: "Request body must be UTF-8 JSON (Content-Type: application/json)." };
+  if (err.type === "entity.parse.failed") return { status, message: "Request body is not valid JSON." };
+  return { status, message: "Request body could not be read; resend it." };
+}
