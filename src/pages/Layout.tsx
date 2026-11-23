@@ -1,5 +1,6 @@
 import { Link, Outlet } from "react-router";
 import { ROUTES } from "../game";
+import { HALL_OF_FAME_PATH } from "../hallOfFame";
 
 export function Layout() {
   return (
@@ -10,6 +11,11 @@ export function Layout() {
             🎒 Backpack <span className="text-gold">Brawl</span>
           </Link>
         </h1>
+        <nav aria-label="Main">
+          <Link to={HALL_OF_FAME_PATH} className="font-bold text-gold underline">
+            🏆 Hall of fame
+          </Link>
+        </nav>
       </header>
 
       <main className="flex flex-1 flex-col gap-4 py-6">

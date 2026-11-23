@@ -1,4 +1,5 @@
 import { RunHeader } from "../components/RunHeader";
+import { SubmitRun } from "../components/SubmitRun";
 import { RunOver } from "../components/RunOver";
 import { runOutcome } from "../run";
 import { useActiveGame } from "../state/GameContext";
@@ -13,6 +14,9 @@ export function ResultPage() {
     <>
       <RunHeader run={game.run} />
       <RunOver run={game.run} outcome={outcome} onNewRun={startNewRun} />
+      <div className="mx-auto w-full max-w-lg">
+        <SubmitRun run={game.run} />
+      </div>
     </>
   );
 }
