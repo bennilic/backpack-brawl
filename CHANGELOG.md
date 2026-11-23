@@ -7,6 +7,9 @@ Categories: `Added`, `Changed`, `Fixed`, `Removed`. Prefix entries with the requ
 ## Unreleased
 
 ### Added
+- B5 | Resilient matchmaking: every search has an id and a round; only one search can run, and duplicate, late, stale or wrong-round answers are ignored (PR #4).
+- B5 | `B5:` unit tests for starting, answering, failing and retrying a search.
+- `DECISIONS.md` entry D-006: search ids in the game state instead of aborting requests.
 - B1 | Sell items for half their price (rounded down) and reroll the shop for 1 🪙, with buttons that say why an action is not possible, and rules-panel and README texts (PR #3).
 - B1 | `B1:` unit tests for buying, selling, rerolling and the shopping-phase guard.
 - Example unit tests `src/run.test.ts` (client) and `server/opponents.test.ts` (API), and a *Tests* section in `README.md` explaining how to run them and the `ex:` / `B<n>:` naming.
@@ -21,4 +24,5 @@ Categories: `Added`, `Changed`, `Fixed`, `Removed`. Prefix entries with the requ
 - `.gitignore` excludes `.claude/settings.local.json` (personal settings).
 
 ### Fixed
+- B5 | A failed opponent search now returns to a usable shop with an understandable message (before, the shop stayed locked in the searching phase); an unreachable API gets its own message (PR #4).
 - B1 | Buying with a full backpack no longer takes gold without delivering the item; the buy button now says "Backpack is full" (PR #3).
