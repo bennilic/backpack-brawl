@@ -1,6 +1,6 @@
 # Backpack Brawl API
 
-The local API is a small Express server in `server/index.js`. It listens on port 4200 (override with the `PORT` environment variable). During Vite development, `/api` is proxied to it, so the frontend uses relative URLs such as `/api/opponents?round=1`. All responses are JSON. The server keeps no state: restarting it changes nothing about the answers.
+The local API is a small Express server in `server/index.ts`. It listens on port 4200 (override with the `PORT` environment variable). During Vite development, `/api` is proxied to it, so the frontend uses relative URLs such as `/api/opponents?round=1`. All responses are JSON. The server keeps no state: restarting it changes nothing about the answers.
 
 ## `GET /api/health`
 
@@ -12,7 +12,7 @@ Always answers immediately with status 200:
 
 ## `GET /api/opponents`
 
-Returns the opponent for one round of a run. The opponent table lives in `server/opponents.js`.
+Returns the opponent for one round of a run. The opponent table lives in `server/opponents.ts`.
 
 ### Query parameters
 

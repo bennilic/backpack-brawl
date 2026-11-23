@@ -7,6 +7,9 @@ Categories: `Added`, `Changed`, `Fixed`, `Removed`. Prefix entries with the requ
 ## Unreleased
 
 ### Added
+- `QUALITYGOALS.md` goal G2 (type safety across client and server) and `DECISIONS.md` entry D-009 (server in TypeScript run by Node type stripping, no `tsx`).
+- `tsconfig.server.json` so `tsc -b` (`pnpm build`) type-checks `server/`; ESLint covers it with Node globals.
+- Dev dependencies `@types/express` and `@types/cors` (type-only; Express and cors ship no types, same reason as `@types/react`).
 - B1 | Sell items for half their price (rounded down) and reroll the shop for 1 🪙, with buttons that say why an action is not possible, and rules-panel and README texts (PR #3).
 - B1 | `B1:` unit tests for buying, selling, rerolling and the shopping-phase guard.
 - Example unit tests `src/run.test.ts` (client) and `server/opponents.test.ts` (API), and a *Tests* section in `README.md` explaining how to run them and the `ex:` / `B<n>:` naming.
@@ -18,6 +21,7 @@ Categories: `Added`, `Changed`, `Fixed`, `Removed`. Prefix entries with the requ
 - Exam reference material in `.claude/reference/` (course manuscript, diary guidelines) and project instructions in `CLAUDE.md` (commit `805864a`).
 
 ### Changed
+- The API server is TypeScript: `server/index.js` and `server/opponents.js` became `.ts` (renamed with `git mv`), started with `node server/index.ts`. No behaviour change.
 - `.gitignore` excludes `.claude/settings.local.json` (personal settings).
 
 ### Fixed
