@@ -78,3 +78,13 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
   - Tests use only `describe`, `it` and `expect` from Vitest. `--passWithNoTests` stays as it is.
 - **Reason / trade-offs:** Vitest is already installed and shares the Vite config, so there is no new dependency. Co-location and the prefixes make it visible which tests are examples and which prove a requirement. The cost is that testing goes beyond the manuscript, so the subset is kept small, and that code outside `REQUIREMENTS.md` is not covered on purpose.
 - **Evidence:** `src/run.test.ts`, `server/opponents.test.ts`, `README.md` section *Tests*.
+
+## D-007: Save policy: store the run in `localStorage` after every change, resume a search as the shop, replay a battle from its frame
+- **Date:** 2026-11-23
+- **Status:** Accepted
+- **Requirement:** B6
+- **Context:** A refresh must continue the run on the matching screen, survive broken saves, and must not become a way to get a free reroll, another opponent, a second result or to dodge a loss.
+- **Options:** (a) save only at round boundaries (shop start); (b) save after every state change and resume exactly; (c) additionally treat any refresh during a search/battle as a penalty (e.g. lose a life).
+- **Decision:** (b). Saved: phase, run (round, gold, lives, wins, shop seed and offers, backpack) and, in a battle, the opponent and the shown frame. A search in progress is resumed as the shop (the opponent only depends on the round, nothing was paid, so searching again gives the same opponent). A battle is resumed at the saved frame: the result is not stored but simulated again from backpack and opponent, which is deterministic, so it is the same result; the result is applied to the run exactly once when the last frame is reached, and the already updated run is what gets saved. Saved data is validated field by field (version, types, ranges, known item ids, unique uids, round consistent with wins and lives, phase consistent with the run); anything wrong is deleted and the game starts without a run.
+- **Reason / trade-offs:** Saving after every change means a refresh can never undo a purchase, a reroll or the start of a battle, so no free reroll (the seed is saved), no different opponent, no second result and no escaping a loss. Storing only what cannot be recomputed keeps the save small. Cost: the save lives in the player's browser and can be edited, so a determined player can cheat; the validation only guarantees a playable state, not honesty (acceptable for a local game, and the hall of fame validates on the server in B7). Plain `localStorage` and JSON only (ch. 17 state, ch. 18 offline storage).
+- **Evidence:** `src/save.ts`, `src/save.test.ts`, `src/state/GameProvider.tsx`.

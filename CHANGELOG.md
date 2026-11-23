@@ -7,6 +7,9 @@ Categories: `Added`, `Changed`, `Fixed`, `Removed`. Prefix entries with the requ
 ## Unreleased
 
 ### Added
+- B6 | Save and resume: the run is stored in `localStorage` after every change and restored on page load on the matching screen; corrupt, incompatible or impossible saves are discarded and the game starts without a run (`src/save.ts`, `src/state/GameProvider.tsx`).
+- B6 | `B6:` unit tests for saving, resuming (shop, search, battle, finished) and rejecting corrupt data.
+- `DECISIONS.md` entry D-007: save policy for B6.
 - B1 | Sell items for half their price (rounded down) and reroll the shop for 1 🪙, with buttons that say why an action is not possible, and rules-panel and README texts (PR #3).
 - B1 | `B1:` unit tests for buying, selling, rerolling and the shopping-phase guard.
 - Example unit tests `src/run.test.ts` (client) and `server/opponents.test.ts` (API), and a *Tests* section in `README.md` explaining how to run them and the `ex:` / `B<n>:` naming.
