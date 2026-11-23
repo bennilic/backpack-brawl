@@ -6,6 +6,7 @@ export const START_GOLD = 10;
 export const START_LIVES = 3;
 export const WINS_TO_VICTORY = 5;
 export const GOLD_PER_ROUND = 5;
+export const REROLL_COST = 1;
 
 export function newRun(seed: number): RunState {
   const roll = rollShop(seed);
@@ -30,6 +31,7 @@ export function buyBlocker(state: RunState, offerIndex: number): string | null {
   const itemId = state.shop[offerIndex];
   if (!itemId) return "Already sold";
   if (state.gold < getItem(itemId).price) return "Not enough gold";
+  if (firstFreeSlot(state) === -1) return "Backpack is full";
   return null;
 }
 
@@ -43,6 +45,39 @@ export function buyItem(state: RunState, offerIndex: number): RunState {
   const shop = [...state.shop];
   shop[offerIndex] = null;
   return { ...state, gold: state.gold - getItem(itemId).price, shop, backpack, nextUid: state.nextUid + 1 };
+}
+
+/** What an item sells for: half its price, rounded down. */
+export function sellPrice(itemId: string): number {
+  return Math.floor(getItem(itemId).price / 2);
+}
+
+/** Why the backpack slot can't be sold right now, or `null` if it can. */
+export function sellBlocker(state: RunState, slotIndex: number): string | null {
+  if (!state.backpack[slotIndex]) return "Nothing to sell here";
+  return null;
+}
+
+/** Sells the item in a backpack slot for half its price; unchanged state if not allowed. */
+export function sellItem(state: RunState, slotIndex: number): RunState {
+  if (sellBlocker(state, slotIndex) !== null) return state;
+  const sold = state.backpack[slotIndex]!;
+  const backpack = [...state.backpack];
+  backpack[slotIndex] = null;
+  return { ...state, gold: state.gold + sellPrice(sold.itemId), backpack };
+}
+
+/** Why the shop can't be rerolled right now, or `null` if it can. */
+export function rerollBlocker(state: RunState): string | null {
+  if (state.gold < REROLL_COST) return "Not enough gold";
+  return null;
+}
+
+/** Pays for a fresh roll of all shop offers (sold offers included); unchanged state if not allowed. */
+export function rerollShop(state: RunState): RunState {
+  if (rerollBlocker(state) !== null) return state;
+  const roll = rollShop(state.seed);
+  return { ...state, gold: state.gold - REROLL_COST, seed: roll.seed, shop: roll.offers };
 }
 
 export type RunOutcome = "victory" | "defeat";
