@@ -78,3 +78,20 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
   - Tests use only `describe`, `it` and `expect` from Vitest. `--passWithNoTests` stays as it is.
 - **Reason / trade-offs:** Vitest is already installed and shares the Vite config, so there is no new dependency. Co-location and the prefixes make it visible which tests are examples and which prove a requirement. The cost is that testing goes beyond the manuscript, so the subset is kept small, and that code outside `REQUIREMENTS.md` is not covered on purpose.
 - **Evidence:** `src/run.test.ts`, `server/opponents.test.ts`, `README.md` section *Tests*.
+
+## D-009: The API server is written in TypeScript and run directly by Node
+- **Date:** 2026-11-23
+- **Status:** Accepted
+- **Requirement:** qualitative (G2)
+- **Context:** The frontend is strict TypeScript (manuscript ch. 10), but `server/` was plain JavaScript. The API code (validation, error handling, hall of fame) is exactly where wrong shapes of data cause bugs, and the client and the server should be checked by the same tool.
+- **Options:**
+  1. **Run the `.ts` files with Node's type stripping** (`node server/index.ts`, Node 24). No build step and no new runtime dependency.
+  2. Add `tsx` (or `ts-node`) to run the files. Works on older Node versions, but adds a dependency just to start the server.
+  3. Compile the server to `dist/` with `tsc` and run the output. Needs an extra build step and a second output folder in dev.
+- **Decision:** Option 1. `server/*.ts` is started with `node server/index.ts`. A separate `tsconfig.server.json` (referenced from `tsconfig.json`) makes `tsc -b` in `pnpm build` type-check the server, and ESLint lints it with Node globals.
+- **Reason / trade-offs:**
+  - Node only removes the types and does not check them, so `tsc -b` is the real check. Type stripping supports only *erasable* syntax: no `enum`, `namespace` or parameter properties, and relative imports keep the `.ts` extension. `erasableSyntaxOnly` and `allowImportingTsExtensions` in the tsconfig make the compiler enforce this, so a mistake fails the build and not at runtime.
+  - Needs Node 24 or newer (it is the version in use here). Old Node versions would need option 2 or 3.
+  - Two new **devDependencies**, `@types/express` and `@types/cors`: Express and cors ship no type definitions, the same reason the project already has `@types/react`. They are type-only and add nothing at runtime.
+  - This is a pure refactor: no behaviour of the API changed.
+- **Evidence:** PR "Chore | Convert the API server to TypeScript", `tsconfig.server.json`, `package.json` (`server` script).

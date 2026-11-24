@@ -1,14 +1,13 @@
 // EXAMPLE (ex:) - this file only shows how a unit test works on the server. It is not a
 // requirement test. Read src/run.test.ts first: it explains describe / it / expect step by step.
 //
-// The API code in server/ is plain JavaScript and tests are TypeScript, but that is no problem:
-// Vitest understands both. We test the pure functions in opponents.js directly - there is no need
-// to start the Express server, so the tests are fast and need no network or port.
+// The API code in server/ and the tests are both TypeScript. We test the pure functions in opponents.ts directly -
+// there is no need to start the Express server, so the tests are fast and need no network or port.
 //
 // How to run it:  pnpm test server/opponents.test.ts
 
 import { describe, expect, it } from "vitest";
-import { HP_PER_EXTRA_ROUND, MAX_ITEMS, OPPONENTS, opponentForRound, parseRound } from "./opponents.js";
+import { HP_PER_EXTRA_ROUND, MAX_ITEMS, OPPONENTS, opponentForRound, parseRound } from "./opponents.ts";
 
 describe("ex: parseRound", () => {
   // `parseRound` turns the text of `?round=...` into a number, or `null` if it is not valid.
