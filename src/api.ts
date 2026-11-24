@@ -10,7 +10,8 @@ export async function fetchOpponent(round: number): Promise<Opponent> {
   }
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as { error?: string } | null;
-    throw new Error(body?.error ?? `The opponent search failed (HTTP ${response.status}).`);
+    // The server's text says what went wrong; the next step is added here because the banner shows the text as it is.
+    throw new Error(`${body?.error ?? `The opponent search failed (HTTP ${response.status}).`} Try again in a moment.`);
   }
   return response.json() as Promise<Opponent>;
 }

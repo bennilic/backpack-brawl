@@ -94,7 +94,7 @@ describe("B5: resilient matchmaking", () => {
 
     expect(result.phase).toBe("shop");
     expect(result.battle).toBeNull();
-    expect(result.error).toMatch(/wrong round/);
+    expect(result.error).toMatch(/wrong round.*try again\.$/i);
   });
 
   it("returns to a usable shop with the error message when the search fails", () => {

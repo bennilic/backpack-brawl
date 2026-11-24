@@ -40,7 +40,7 @@ export function ShopPage() {
       const opponent = await fetchOpponent(round);
       update((current) => startBattle(current, searchId, opponent));
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Opponent search failed.";
+      const message = error instanceof Error ? error.message : "The opponent search failed unexpectedly. Try again.";
       update((current) => searchFailed(current, searchId, message));
     } finally {
       isRequestRunning.current = false;
