@@ -5,8 +5,8 @@ export async function fetchOpponent(round: number): Promise<Opponent> {
   let response: Response;
   try {
     response = await fetch(`/api/opponents?round=${encodeURIComponent(round)}`);
-  } catch {
-    throw new Error("The arena could not be reached. Check that the API is running (pnpm dev).");
+  } catch (cause) {
+    throw new Error("The opponent could not be reached. Check your connection and try again.", { cause });
   }
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as { error?: string } | null;
