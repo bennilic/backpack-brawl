@@ -1,6 +1,8 @@
 export interface ItemEffects {
   damage?: number;
   block?: number;
+  poison?: number; // für B3
+  heal?: number; // für B3
 }
 
 export interface ItemDef {
@@ -55,6 +57,7 @@ export interface FighterSnapshot {
   hp: number;
   maxHp: number;
   block: number;
+  poison: number; // für B3
 }
 
 export type BattleEventKind = "damage" | "block";
