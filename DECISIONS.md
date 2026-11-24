@@ -79,6 +79,15 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
 - **Reason / trade-offs:** Vitest is already installed and shares the Vite config, so there is no new dependency. Co-location and the prefixes make it visible which tests are examples and which prove a requirement. The cost is that testing goes beyond the manuscript, so the subset is kept small, and that code outside `REQUIREMENTS.md` is not covered on purpose.
 - **Evidence:** `src/run.test.ts`, `server/opponents.test.ts`, `README.md` section *Tests*.
 
+## D-006: Search ids in the game state instead of aborting requests
+- **Date:** 2026-11-23
+- **Status:** Accepted
+- **Requirement:** B5
+- **Context:** The opponent API is slow and can fail. A second click, a failed search followed by a retry, or a new run could let an old answer arrive at the wrong time and start a battle for the wrong round or twice.
+- **Options:** (a) Abort the old request with `AbortController`. (b) Give every search an id in the game state and let the pure transitions ignore answers that do not carry the current id. (c) A `useRef` flag in the page only.
+- **Decision:** (b), plus a small ref in `ShopPage` that blocks a second click in the same tick. `startSearch` only works in the shop phase and creates `search = { id, round }` (`<gameId>:<n>`). `startBattle` and `searchFailed` apply an answer only while `phase === "searching"` and the id matches. A failure returns the phase to `shop` with the message; an opponent for a different round counts as a failed search.
+- **Reason / trade-offs:** The rules stay pure and testable without timers or `fetch`, and a late answer is harmless even if the request itself could not be cancelled. The id contains the run's starting seed, so an answer from an old run cannot match the new run's `1:1`. The cost is that stale requests still run to completion on the server instead of being cancelled (`AbortController`, manuscript ch. 5/6, could be added). Concepts: immutable state updates and derived guards (ch. 15–17), request races (mystery-road exercise).
+- **Evidence:** `src/game.test.ts` (`B5:` tests), branch `feat/b5-resilient-matchmaking`.
 ## D-009: The API server is written in TypeScript and run directly by Node
 - **Date:** 2026-11-23
 - **Status:** Accepted

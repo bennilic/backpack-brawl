@@ -7,6 +7,9 @@ Categories: `Added`, `Changed`, `Fixed`, `Removed`. Prefix entries with the requ
 ## Unreleased
 
 ### Added
+- B5 | Resilient matchmaking: every search has an id and a round; only one search can run, and duplicate, late, stale or wrong-round answers are ignored (PR #4).
+- B5 | `B5:` unit tests for starting, answering, failing and retrying a search.
+- `DECISIONS.md` entry D-006: search ids in the game state instead of aborting requests.
 - `QUALITYGOALS.md` goal G2 (type safety across client and server) and `DECISIONS.md` entry D-009 (server in TypeScript run by Node type stripping, no `tsx`).
 - `tsconfig.server.json` so `tsc -b` (`pnpm build`) type-checks `server/`; ESLint covers it with Node globals.
 - Dev dependencies `@types/express` and `@types/cors` (type-only; Express and cors ship no types, same reason as `@types/react`).
@@ -25,4 +28,5 @@ Categories: `Added`, `Changed`, `Fixed`, `Removed`. Prefix entries with the requ
 - `.gitignore` excludes `.claude/settings.local.json` (personal settings).
 
 ### Fixed
+- B5 | A failed opponent search now returns to a usable shop with an understandable message (before, the shop stayed locked in the searching phase); an unreachable API gets its own message (PR #4).
 - B1 | Buying with a full backpack no longer takes gold without delivering the item; the buy button now says "Backpack is full" (PR #3).
