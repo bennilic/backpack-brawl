@@ -88,3 +88,19 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
 - **Decision:** (b), plus a small ref in `ShopPage` that blocks a second click in the same tick. `startSearch` only works in the shop phase and creates `search = { id, round }` (`<gameId>:<n>`). `startBattle` and `searchFailed` apply an answer only while `phase === "searching"` and the id matches. A failure returns the phase to `shop` with the message; an opponent for a different round counts as a failed search.
 - **Reason / trade-offs:** The rules stay pure and testable without timers or `fetch`, and a late answer is harmless even if the request itself could not be cancelled. The id contains the run's starting seed, so an answer from an old run cannot match the new run's `1:1`. The cost is that stale requests still run to completion on the server instead of being cancelled (`AbortController`, manuscript ch. 5/6, could be added). Concepts: immutable state updates and derived guards (ch. 15–17), request races (mystery-road exercise).
 - **Evidence:** `src/game.test.ts` (`B5:` tests), branch `feat/b5-resilient-matchmaking`.
+## D-009: The API server is written in TypeScript and run directly by Node
+- **Date:** 2026-11-23
+- **Status:** Accepted
+- **Requirement:** qualitative (G2)
+- **Context:** The frontend is strict TypeScript (manuscript ch. 10), but `server/` was plain JavaScript. The API code (validation, error handling, hall of fame) is exactly where wrong shapes of data cause bugs, and the client and the server should be checked by the same tool.
+- **Options:**
+  1. **Run the `.ts` files with Node's type stripping** (`node server/index.ts`, Node 24). No build step and no new runtime dependency.
+  2. Add `tsx` (or `ts-node`) to run the files. Works on older Node versions, but adds a dependency just to start the server.
+  3. Compile the server to `dist/` with `tsc` and run the output. Needs an extra build step and a second output folder in dev.
+- **Decision:** Option 1. `server/*.ts` is started with `node server/index.ts`. A separate `tsconfig.server.json` (referenced from `tsconfig.json`) makes `tsc -b` in `pnpm build` type-check the server, and ESLint lints it with Node globals.
+- **Reason / trade-offs:**
+  - Node only removes the types and does not check them, so `tsc -b` is the real check. Type stripping supports only *erasable* syntax: no `enum`, `namespace` or parameter properties, and relative imports keep the `.ts` extension. `erasableSyntaxOnly` and `allowImportingTsExtensions` in the tsconfig make the compiler enforce this, so a mistake fails the build and not at runtime.
+  - Needs Node 24 or newer (it is the version in use here). Old Node versions would need option 2 or 3.
+  - Two new **devDependencies**, `@types/express` and `@types/cors`: Express and cors ship no type definitions, the same reason the project already has `@types/react`. They are type-only and add nothing at runtime.
+  - This is a pure refactor: no behaviour of the API changed.
+- **Evidence:** PR "Chore | Convert the API server to TypeScript", `tsconfig.server.json`, `package.json` (`server` script).

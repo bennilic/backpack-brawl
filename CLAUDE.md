@@ -33,7 +33,7 @@ React 19, React Router 8, TypeScript (strict), Vite, Tailwind CSS 4, Express 5 (
 - Game rules are **plain TypeScript modules without React**; each rule function takes the current state and returns a new one (no mutation): `src/types.ts`, `items.ts`, `shop.ts`, `run.ts`, `battle.ts`, `game.ts`, `rules.ts`, `api.ts`.
 - `src/state/` holds the game state for all pages (`GameProvider`, `useGame`) and `RequireRoute` (redirects to the page matching the current phase).
 - `src/pages/` one component per screen, `src/components/` presentational parts, `src/App.tsx` routes.
-- `server/index.js` and `server/opponents.js` implement the local API; the contract is documented in `docs/API.md` (new endpoints must be added there).
+- `server/index.ts` and `server/opponents.ts` implement the local API; the contract is documented in `docs/API.md` (new endpoints must be added there).
 - Shop rolls use a seeded RNG stored in the run state: same seed, same offers. Keep everything deterministic.
 
 ### Requirements at a glance (details in `REQUIREMENTS.md`)
