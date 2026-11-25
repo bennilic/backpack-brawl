@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { runIdFor } from "../src/hallOfFame";
 import { applyBattleResult, newRun } from "../src/run";
-import { compareEntries, errorResponseFor, createHallOfFame, parseLimit, validateRun, MAX_LIMIT } from "./hallOfFame.js";
+import { compareEntries, errorResponseFor, createHallOfFame, parseLimit, validateRun, MAX_LIMIT } from "./hallOfFame.ts";
 
 const victory = { runId: "run-0001-aaaa", name: "Ada", wins: 5, lives: 2, rounds: 6 };
 const defeat = { runId: "run-0002-bbbb", name: "Bob", wins: 3, lives: 0, rounds: 6 };
@@ -52,15 +52,15 @@ describe("B7: validateRun rejects invalid input", () => {
     const result = validateRun(body);
     expect(result.run).toBeUndefined();
     expect(typeof result.error).toBe("string");
-    expect(result.error.length).toBeGreaterThan(10);
+    expect(result.error?.length).toBeGreaterThan(10);
   });
   it("does not echo a long unknown field name in full", () => {
-    expect(validateRun({ ...victory, ["k".repeat(500)]: 1 }).error.length).toBeLessThan(200);
+    expect(validateRun({ ...victory, ["k".repeat(500)]: 1 }).error?.length ?? Infinity).toBeLessThan(200);
   });
 });
 
 describe("B7: ordering", () => {
-  const entry = (wins: number, lives: number, sequence: number) => ({ wins, lives, rounds: wins + 3 - lives, sequence });
+  const entry = (wins: number, lives: number, sequence: number) => ({ runId: `run-${sequence}-xxxx`, name: "N", wins, lives, rounds: wins + 3 - lives, sequence });
   it("ranks victories before any defeat", () => {
     expect(compareEntries(entry(5, 1, 2), entry(4, 0, 1))).toBeLessThan(0);
   });

@@ -1,7 +1,7 @@
 import cors from "cors";
 import express from "express";
-import { createHallOfFame, errorResponseFor, parseLimit, publicEntry, validateRun, MAX_LIMIT } from "./hallOfFame.js";
-import { opponentForRound, parseRound } from "./opponents.js";
+import { createHallOfFame, errorResponseFor, parseLimit, publicEntry, validateRun, MAX_LIMIT } from "./hallOfFame.ts";
+import { opponentForRound, parseRound } from "./opponents.ts";
 
 const app = express();
 const port = Number(process.env.PORT ?? 4200);
@@ -33,9 +33,9 @@ app.get("/api/hall-of-fame", (req, res) => {
 });
 
 app.post("/api/hall-of-fame", (req, res) => {
-  const { run, error } = validateRun(req.body);
-  if (error) return res.status(400).json({ error });
-  const result = hallOfFame.submit(run);
+  const validation = validateRun(req.body);
+  if (validation.run === undefined) return res.status(400).json({ error: validation.error });
+  const result = hallOfFame.submit(validation.run);
   if (result.status === "conflict") {
     return res.status(409).json({ error: "This runId was already submitted with different data. Each run can be submitted only once." });
   }
@@ -44,7 +44,7 @@ app.post("/api/hall-of-fame", (req, res) => {
 });
 
 // Body-parser failures (bad JSON, body too large) would otherwise produce an HTML error page.
-app.use((err, _req, res, next) => {
+app.use((err: unknown, _req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (res.headersSent) return next(err);
   const { status, message } = errorResponseFor(err);
   res.status(status).json({ error: message });

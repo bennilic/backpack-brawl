@@ -79,6 +79,33 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
 - **Reason / trade-offs:** Vitest is already installed and shares the Vite config, so there is no new dependency. Co-location and the prefixes make it visible which tests are examples and which prove a requirement. The cost is that testing goes beyond the manuscript, so the subset is kept small, and that code outside `REQUIREMENTS.md` is not covered on purpose.
 - **Evidence:** `src/run.test.ts`, `server/opponents.test.ts`, `README.md` section *Tests*.
 
+## D-006: Search ids in the game state instead of aborting requests
+- **Date:** 2026-11-23
+- **Status:** Accepted
+- **Requirement:** B5
+- **Context:** The opponent API is slow and can fail. A second click, a failed search followed by a retry, or a new run could let an old answer arrive at the wrong time and start a battle for the wrong round or twice.
+- **Options:** (a) Abort the old request with `AbortController`. (b) Give every search an id in the game state and let the pure transitions ignore answers that do not carry the current id. (c) A `useRef` flag in the page only.
+- **Decision:** (b), plus a small ref in `ShopPage` that blocks a second click in the same tick. `startSearch` only works in the shop phase and creates `search = { id, round }` (`<gameId>:<n>`). `startBattle` and `searchFailed` apply an answer only while `phase === "searching"` and the id matches. A failure returns the phase to `shop` with the message; an opponent for a different round counts as a failed search.
+- **Reason / trade-offs:** The rules stay pure and testable without timers or `fetch`, and a late answer is harmless even if the request itself could not be cancelled. The id contains the run's starting seed, so an answer from an old run cannot match the new run's `1:1`. The cost is that stale requests still run to completion on the server instead of being cancelled (`AbortController`, manuscript ch. 5/6, could be added). Concepts: immutable state updates and derived guards (ch. 15–17), request races (mystery-road exercise).
+- **Evidence:** `src/game.test.ts` (`B5:` tests), branch `feat/b5-resilient-matchmaking`.
+
+## D-009: The API server is written in TypeScript and run directly by Node
+- **Date:** 2026-11-23
+- **Status:** Accepted
+- **Requirement:** qualitative (G2)
+- **Context:** The frontend is strict TypeScript (manuscript ch. 10), but `server/` was plain JavaScript. The API code (validation, error handling, hall of fame) is exactly where wrong shapes of data cause bugs, and the client and the server should be checked by the same tool.
+- **Options:**
+  1. **Run the `.ts` files with Node's type stripping** (`node server/index.ts`, Node 24). No build step and no new runtime dependency.
+  2. Add `tsx` (or `ts-node`) to run the files. Works on older Node versions, but adds a dependency just to start the server.
+  3. Compile the server to `dist/` with `tsc` and run the output. Needs an extra build step and a second output folder in dev.
+- **Decision:** Option 1. `server/*.ts` is started with `node server/index.ts`. A separate `tsconfig.server.json` (referenced from `tsconfig.json`) makes `tsc -b` in `pnpm build` type-check the server, and ESLint lints it with Node globals.
+- **Reason / trade-offs:**
+  - Node only removes the types and does not check them, so `tsc -b` is the real check. Type stripping supports only *erasable* syntax: no `enum`, `namespace` or parameter properties, and relative imports keep the `.ts` extension. `erasableSyntaxOnly` and `allowImportingTsExtensions` in the tsconfig make the compiler enforce this, so a mistake fails the build and not at runtime.
+  - Needs Node 24 or newer (it is the version in use here). Old Node versions would need option 2 or 3.
+  - Two new **devDependencies**, `@types/express` and `@types/cors`: Express and cors ship no type definitions, the same reason the project already has `@types/react`. They are type-only and add nothing at runtime.
+  - This is a pure refactor: no behaviour of the API changed.
+- **Evidence:** PR "Chore | Convert the API server to TypeScript", `tsconfig.server.json`, `package.json` (`server` script).
+
 ## D-008: Hall of fame order, server-side validation and one submission per run
 - **Date:** 2026-11-23
 - **Status:** Accepted
@@ -91,4 +118,4 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
 - **Decision:** Option 2. Order: victory first, then more wins, then fewer rounds, then more lives left, then the earlier submission. Rank is the position (ties are not shared). Plausibility: victory is `wins = 5` and `lives >= 1`, defeat is `lives = 0` and `wins < 5`, and `rounds = wins + (3 - lives)`. Each run carries a `runId` derived from the finished run state; the server stores a `runId` once (same data again: 200 duplicate, other data: 409) and the client also remembers it, so reloads and retries never create a second entry. Names are limited to 20 characters from letters, digits, spaces and `_ . ' -`; bodies to 2 kB; unknown fields are rejected; at most 1000 entries are kept.
 - **Reasons / trade-offs:** The server cannot prove a run really happened (the course material has no signing or replay), so it only rejects what is impossible; a determined player can still submit a perfect-looking fake run. This is accepted for a local, unauthenticated exam app. Against a client-sent score, facts plus a server-side order cannot be gamed by sending a huge number. "Fewer rounds" and "more lives left" mean the same among victories (and rounds are constant among defeats), but both are listed so the rule stays correct if the game rules change. A strict allow-list for names keeps markup out of the stored data in addition to React's escaping. The 1000-entry cap bounds memory; a run that falls off the list can in theory be resubmitted.
 - **Hardening after security review:** the API binds to `127.0.0.1` (not all interfaces) and CORS allows only `http://localhost:5174`, so another website or a LAN host cannot write to the hall. The Vite proxy target is `http://127.0.0.1:4200` to match.
-- **Evidence:** `server/hallOfFame.js`, `server/hallOfFame.test.ts`, `docs/API.md`.
+- **Evidence:** `server/hallOfFame.ts`, `server/hallOfFame.test.ts`, `docs/API.md`.
