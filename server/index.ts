@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import { opponentForRound, parseRound } from "./opponents.js";
+import { opponentForRound, parseRound } from "./opponents.ts";
 
 const app = express();
 const port = Number(process.env.PORT ?? 4200);
