@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { advanceReplay, newGame, skipReplay, startBattle, startSearch } from "./game";
+import { advanceReplay, isReplayDone, leaveBattle, newGame, nextSearchId, skipReplay, startBattle, startSearch } from "./game";
 import { buyItem } from "./run";
 import { SAVE_KEY, SAVE_VERSION, loadGame, parseSavedGame, saveGame, toSavedGame, type SaveStorage } from "./save";
 import type { GameState, Opponent } from "./types";
@@ -27,6 +27,12 @@ function fakeStorage(initial: Record<string, string> = {}): SaveStorage & { data
 function shoppingGame(): GameState {
   const game = newGame(7);
   return { ...game, run: buyItem(game.run, 0) };
+}
+
+/** A battle started the way the app does it: a search, then the opponent's answer for its id. */
+function battleGame(opponent: Opponent = OPPONENT): GameState {
+  const searching = startSearch(shoppingGame());
+  return startBattle(searching, nextSearchId(shoppingGame()), opponent);
 }
 
 const roundTrip = (game: GameState) => loadGame(fakeStorage({ [SAVE_KEY]: JSON.stringify(toSavedGame(game)) }));
@@ -63,7 +69,7 @@ describe("B6: save and resume", () => {
   });
 
   it("resumes a battle at the saved frame with the same opponent and result", () => {
-    const battle = advanceReplay(advanceReplay(startBattle(shoppingGame(), OPPONENT)));
+    const battle = advanceReplay(advanceReplay(battleGame()));
 
     const loaded = roundTrip(battle);
 
@@ -74,8 +80,46 @@ describe("B6: save and resume", () => {
     expect(loaded?.run).toEqual(battle.run);
   });
 
+  it("gives a resumed run its game id and no search state", () => {
+    const game = shoppingGame();
+
+    const loaded = roundTrip({ ...game, searchCount: 3 });
+
+    expect(loaded?.gameId).toBe(game.gameId);
+    expect(loaded?.searchCount).toBe(0);
+    expect(loaded?.search).toBeNull();
+  });
+
+  it("lets a resumed shop search again with an id that can be answered", () => {
+    const loaded = roundTrip(startSearch(shoppingGame()))!;
+
+    const searching = startSearch(loaded);
+    const battle = startBattle(searching, nextSearchId(loaded), OPPONENT);
+
+    expect(searching.phase).toBe("searching");
+    expect(battle.phase).toBe("battle");
+  });
+
+  it("applies the result exactly once when a resumed battle is played to the end", () => {
+    const loaded = roundTrip(advanceReplay(battleGame()))!;
+    const unresolved = loaded.run;
+
+    const done = skipReplay(loaded);
+
+    expect(done.run).not.toEqual(unresolved);
+    expect(skipReplay(done).run).toEqual(done.run);
+    expect(done.run.wins + (3 - done.run.lives)).toBe(1);
+  });
+
+  it("can leave a battle that was resumed after its last frame", () => {
+    const loaded = roundTrip(skipReplay(battleGame()))!;
+
+    expect(isReplayDone(loaded.battle!)).toBe(true);
+    expect(leaveBattle(loaded).phase).toBe("shop");
+  });
+
   it("does not apply the battle result twice when saved after the last frame", () => {
-    const done = skipReplay(startBattle(shoppingGame(), OPPONENT));
+    const done = skipReplay(battleGame());
 
     const loaded = roundTrip(done);
 
@@ -139,6 +183,8 @@ describe("B6: save and resume", () => {
       ["negative gold", (s: Saved) => (s.run.gold = -1)],
       ["fractional gold", (s: Saved) => (s.run.gold = 1.5)],
       ["missing run field", (s: Saved) => delete s.run.lives],
+      ["missing game id", (s: Saved) => delete s.gameId],
+      ["fractional game id", (s: Saved) => (s.gameId = 1.5)],
       ["unknown phase", (s: Saved) => (s.phase = "cheating")],
       ["unknown shop item", (s: Saved) => (s.run.shop[0] = "laser-sword")],
       ["short shop", (s: Saved) => s.run.shop.pop()],
@@ -161,11 +207,12 @@ describe("B6: save and resume", () => {
       ["frame beyond the replay", (s: Saved) => (s.battle.frame = 100000)],
       ["negative frame", (s: Saved) => (s.battle.frame = -1)],
       ["unknown opponent item", (s: Saved) => (s.battle.opponent.items = ["laser-sword"])],
+      ["opponent from a different round", (s: Saved) => (s.battle.opponent.round = 4)],
       ["opponent without hp", (s: Saved) => delete s.battle.opponent.hp],
       ["opponent with absurd hp", (s: Saved) => (s.battle.opponent.hp = 1e9)],
       ["opponent that is not an object", (s: Saved) => (s.battle.opponent = "rat")],
     ])("rejects a battle with %s", (_name, change) => {
-      const battle = startBattle(shoppingGame(), OPPONENT);
+      const battle = battleGame();
 
       expect(parseSavedGame(tampered(battle, change))).toBeNull();
     });

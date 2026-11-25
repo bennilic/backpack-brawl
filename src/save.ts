@@ -1,5 +1,5 @@
 import { CATALOG } from "./items";
-import { startBattle } from "./game";
+import { buildOpponentFighter, buildPlayerFighter, simulateBattle } from "./battle";
 import { START_LIVES, WINS_TO_VICTORY, runOutcome } from "./run";
 import { BACKPACK_SIZE, SHOP_SIZE } from "./shop";
 import type { Backpack, GameState, Opponent, Phase, RunState } from "./types";
@@ -13,7 +13,7 @@ export interface SaveStorage {
 
 export const SAVE_KEY = "backpack-brawl-save";
 /** Bump when the saved shape changes; saves of another version are discarded. */
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 const MAX_OPPONENT_ITEMS = 6;
 const MAX_OPPONENT_HP = 1000;
@@ -23,6 +23,8 @@ const MAX_UINT32 = 2 ** 32 - 1;
 interface SavedGame {
   version: number;
   phase: Phase;
+  /** Identifies the run (its starting seed); part of every search id. */
+  gameId: number;
   run: RunState;
   battle: { opponent: Opponent; frame: number } | null;
 }
@@ -30,12 +32,13 @@ interface SavedGame {
 /**
  * Turns the game into its saved form. A search in progress is saved as the shop:
  * nothing was paid or decided yet and the opponent only depends on the round (see D-007).
- * The battle result is not saved, it is simulated again on loading.
+ * The battle result is not saved, it is simulated again on loading. Search state (`search`,
+ * `searchCount`) is not saved either: a refresh kills every request in flight, so no answer can arrive.
  */
 export function toSavedGame(game: GameState): SavedGame {
   const phase = game.phase === "searching" ? "shop" : game.phase;
   const battle = game.battle ? { opponent: game.battle.opponent, frame: game.battle.frame } : null;
-  return { version: SAVE_VERSION, phase, run: game.run, battle };
+  return { version: SAVE_VERSION, phase, gameId: game.gameId, run: game.run, battle };
 }
 
 /** Writes the game to storage. Returns `false` if storage is unavailable or full; the game goes on unsaved. */
@@ -82,28 +85,37 @@ export function parseSavedGame(text: string): GameState | null {
     return null;
   }
   if (!isRecord(data) || data.version !== SAVE_VERSION) return null;
-  if (!isRunState(data.run)) return null;
-  const run = data.run;
+  if (!isIntegerBetween(data.gameId, 0, MAX_UINT32) || !isRunState(data.run)) return null;
+  const { gameId, run } = data;
+  const base = { gameId, searchCount: 0, search: null, run, battle: null, error: null };
   const finished = runOutcome(run) !== null;
 
   switch (data.phase) {
     case "shop":
-      return finished || data.battle !== null ? null : { phase: "shop", run, battle: null, error: null };
+      return finished || data.battle !== null ? null : { ...base, phase: "shop" };
     case "finished":
-      return !finished || data.battle !== null ? null : { phase: "finished", run, battle: null, error: null };
+      return !finished || data.battle !== null ? null : { ...base, phase: "finished" };
     case "battle":
-      return isSavedBattle(data.battle) ? restoreBattle(run, data.battle) : null;
+      return isSavedBattle(data.battle) ? restoreBattle({ ...base, phase: "battle" }, data.battle) : null;
     default:
       return null;
   }
 }
 
-function restoreBattle(run: RunState, saved: { opponent: Opponent; frame: number }): GameState | null {
-  const started = startBattle({ phase: "shop", run, battle: null, error: null }, saved.opponent);
-  const replay = started.battle!;
-  if (saved.frame > replay.result.frames.length - 1) return null;
+/**
+ * Rebuilds the replay from the saved opponent and frame. `startBattle` is not used on purpose: it only
+ * accepts the answer of a running search for the run's current round, but a battle saved after its last
+ * frame has already moved the run to the next round.
+ */
+function restoreBattle(game: GameState, saved: { opponent: Opponent; frame: number }): GameState | null {
+  const { opponent } = saved;
+  if (opponent.round !== game.run.round && opponent.round !== game.run.round - 1) return null;
+  const player = buildPlayerFighter(game.run.backpack);
+  const enemy = buildOpponentFighter(opponent);
+  const result = simulateBattle(player, enemy);
+  if (saved.frame > result.frames.length - 1) return null;
   // The frame is set directly (not via showFrame) so a finished replay does not apply its result twice.
-  return { ...started, battle: { ...replay, frame: saved.frame } };
+  return { ...game, battle: { opponent, player, enemy, result, frame: saved.frame } };
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
