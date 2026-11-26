@@ -10,11 +10,11 @@ export type Opponent = { id: string; name: string; icon: string; hp: number; ite
 export type RoundOpponent = Opponent & { round: number };
 
 export const OPPONENTS: Opponent[] = [
-  { id: "mossback-hermit", name: "Mossback Hermit", icon: "🐢", hp: 25, items: ["chipped-dagger", "dung-pile"] }, // für B3: dung-pile hinzugefügt
+  { id: "mossback-hermit", name: "Mossback Hermit", icon: "🐢", hp: 25, items: ["chipped-dagger", "dung-pile"] }, // für B3: dung-pile hinzugefügt,
   { id: "grave-tinker", name: "Grave Tinker", icon: "🦴", hp: 36, items: ["hunting-bow", "heavys-sandvich", "oak-buckler"] }, // für B3: Sandvich hinzugefügt
-  { id: "tollgate-ogre", name: "Tollgate Ogre", icon: "👹", hp: 44, items: ["hunting-bow", "chipped-dagger", "chipped-dagger", "oak-buckler"] },
-  { id: "rusted-knight", name: "Rusted Knight", icon: "🪖", hp: 46, items: ["iron-cleaver", "hunting-bow", "chipped-dagger", "oak-buckler", "pot-lid"] },
-  { id: "pit-gladiator", name: "Pit Gladiator", icon: "🦁", hp: 50, items: ["iron-cleaver", "hunting-bow", "chipped-dagger", "oak-buckler", "pot-lid"] },
+  { id: "tollgate-ogre", name: "Tollgate Ogre", icon: "👹", hp: 44, items: ["hunting-bow", "chipped-dagger", "emberlight", "fire-cape"] }, // für B4: Emberlight + Fire Cape hinzugefügt
+  { id: "rusted-knight", name: "Rusted Knight", icon: "🪖", hp: 46, items: ["iron-cleaver", "hunting-bow", "havels-helm", "havels-armor", "pot-lid"] }, // für B4: Havels-Helm & Havels-Armor hinzugefügt
+  { id: "pit-gladiator", name: "Pit Gladiator", icon: "🦁", hp: 50, items: ["iron-cleaver", "hunting-bow", "chipped-dagger", "havels-helm", "fire-cape"] }, // für B4: Havels-Helm + Fire Cape hinzugefügt
   { id: "ash-golem", name: "Ash Golem", icon: "🗿", hp: 56, items: ["iron-cleaver", "hunting-bow", "spiked-shield", "chipped-dagger", "oak-buckler"] },
   { id: "hollow-king", name: "Hollow King", icon: "👑", hp: 64, items: ["iron-cleaver", "hunting-bow", "hunting-bow", "spiked-shield", "oak-buckler", "pot-lid"] },
 ];

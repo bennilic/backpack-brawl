@@ -3,7 +3,10 @@ export interface ItemEffects {
   block?: number;
   poison?: number; // für B3
   heal?: number; // für B3
+  burn?: number; // für B4: Die Burn-Stacks
 }
+
+export type ItemSet = "fire" | "havel"; // für B4
 
 export interface ItemDef {
   id: string;
@@ -13,6 +16,7 @@ export interface ItemDef {
   /** Cooldown in battle ticks (1 tick = 0.5 s). */
   cooldown: number;
   effects: ItemEffects;
+  set?: ItemSet; // für B4 (optional)
 }
 
 /** A concrete item the player owns; several instances may share one `itemId`. */
@@ -58,9 +62,18 @@ export interface FighterSnapshot {
   maxHp: number;
   block: number;
   poison: number; // für B3
+  burn: number; // B4: Current burn stacks
 }
 
-export type BattleEventKind = "damage" | "block" | "poison" | "heal" | "poison-tick"; // für B3 geändert
+export type BattleEventKind =
+  | "damage"
+  | "block"
+  | "poison" // für B3 geändert
+  | "heal" // für B3 geändert
+  | "poison-tick" // für B3 geändert
+  | "burn" // für B4: Burn-Stacks
+  | "burn-tick"; // für B4: Burn-Stacks ticking down
+
 
 export interface BattleEvent {
   tick: number;
@@ -97,6 +110,7 @@ export interface FighterItem {
   icon: string;
   cooldown: number;
   effects: ItemEffects;
+  set?: ItemSet;
 }
 
 /** Everything `simulateBattle` needs to know about one side. */

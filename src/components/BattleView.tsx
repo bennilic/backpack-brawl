@@ -1,4 +1,4 @@
-import { TICK_SECONDS, MAX_TICKS } from "../battle";
+import { TICK_SECONDS, MAX_TICKS, FIRE_APPLY_INTERVAL, FIRE_STACKS_PER_APPLY, hasActiveSet, } from "../battle";
 import { getItem } from "../items";
 import { STATUS_HELP } from "../rules";
 import type { BattleEvent, BattleEventKind, BattleReplay, Fighter, FighterSnapshot, Side } from "../types";
@@ -97,7 +97,16 @@ const EVENT_COLOUR: Partial<Record<BattleEventKind, string>> = {
 };
 
 function LogLine({ event }: { event: BattleEvent }) {
-  const icon = event.itemId ? getItem(event.itemId).icon : "☠️"; // für B3
+
+  let icon: string;
+  if (event.itemId) {
+    icon = getItem(event.itemId).icon;
+  } else if (event.kind === "burn" || event.kind === "burn-tick") {
+    icon = "🔥"; // für B4: Burn-Stacks oder Burn-Tick
+  } else {
+    icon = "☠️"; // für B3: Poison-Stacks oder Poison-Tick
+  }
+
   const byPlayer = event.source === "player";
   const text = (
     <span className={`flex gap-1.5 ${byPlayer ? "" : "flex-row-reverse text-right"} ${EVENT_COLOUR[event.kind] ?? ""}`}>
@@ -123,8 +132,11 @@ interface FighterPanelProps {
 }
 
 function FighterPanel({ side, icon, fighter, snapshot }: FighterPanelProps) {
-  const { hp, maxHp, block, poison } = snapshot; // für B3 auch "poison" hinzugefügt
+  const { hp, maxHp, block, poison, burn } = snapshot; // für B3 auch "poison" hinzugefügt für B4 auch "burn" hinzugefügt
   const knockedOut = hp <= 0;
+  // B4: Check active sets for this fighter.
+  const fireActive = hasActiveSet(fighter, "fire");
+  const havelActive = hasActiveSet(fighter, "havel");
 
   return (
     <article
@@ -141,7 +153,7 @@ function FighterPanel({ side, icon, fighter, snapshot }: FighterPanelProps) {
       <Bar label="HP" value={hp} max={maxHp} text={`${hp} / ${maxHp}`} colour="bg-life" help={STATUS_HELP.hp} />
       <Bar label="Block" value={block} max={maxHp} text={`🛡️ ${block}`} colour="bg-block" help={STATUS_HELP.block} />
 
-
+      {/* für B3: Current poison-stacks */}
       <div
         title={STATUS_HELP.poison}
         className="flex cursor-help justify-between text-xs text-muted"
@@ -153,13 +165,59 @@ function FighterPanel({ side, icon, fighter, snapshot }: FighterPanelProps) {
       </div>
 
 
+      {/* für B4: Current burn-stacks */}
+      <div
+        title={STATUS_HELP.burn}
+        className="flex cursor-help justify-between text-xs text-muted"
+      >
+        <span>Burn</span>
+        <span className="font-mono">
+         🔥 {burn} {burn === 1 ? "stack" : "stacks"}
+        </span>
+      </div>
+
+
+      {/* für B4: Active set-bonuses */}
+      {(fireActive || havelActive) && (
+        <div className="flex flex-wrap gap-2 text-xs">
+          {fireActive && (
+            <span className="rounded border border-orange-500 px-2 py-1 text-orange-300">
+             🔥 Fire active: +{FIRE_STACKS_PER_APPLY} Burn every{" "}
+             {FIRE_APPLY_INTERVAL * TICK_SECONDS}s
+            </span>
+          )}
+
+          {havelActive && (
+            <span className="rounded border border-stone-400 px-2 py-1 text-stone-300">
+              🛡️ Havel active: +2 Block per Havel activation
+            </span>
+          )}
+        </div>
+      )}
+
+
+
+      {/* Ausgerüsteten Items eines Kämpfers als Symbole anzeigen für B4: Set-Badges */}
       <ul className="flex flex-wrap gap-1" aria-label="Items">
         {fighter.items.map((item, index) => (
-          <li key={index} title={item.name} className="rounded bg-ink/50 px-1.5 py-0.5 text-xl">
-            {item.icon}
+          <li
+            key={index}
+            title={item.name}
+            className="flex flex-col items-center gap-1 rounded bg-ink/50 px-1.5 py-1"
+          >
+            <span className="text-xl">{item.icon}</span>
+
+            {item.set && (
+              <span className="text-[10px] font-bold text-gold">
+                {item.set === "fire" ? "🔥 Fire" : "🛡️ Havel"}
+              </span>
+            )}
           </li>
         ))}
       </ul>
+
+
+
     </article>
   );
 }

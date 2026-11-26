@@ -19,6 +19,15 @@ export function ItemCard({ item, children }: ItemCardProps) {
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-display font-bold">{item.name}</h3>
+          {/* B4: Set badge */}
+          {item.set && (
+            <span
+              title="Set bonus activates with 2 or more items of this set."
+              className="inline-block rounded border border-gold/60 px-2 py-0.5 text-xs font-bold text-gold"
+            >
+              {item.set === "fire" ? "🔥 Fire Set" : "🛡️ Havel's Set"}
+            </span>
+          )}
         </div>
       </div>
       <ul className="flex flex-wrap gap-x-3 gap-y-1 text-sm">

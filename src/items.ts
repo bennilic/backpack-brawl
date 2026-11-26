@@ -15,6 +15,18 @@ export const CATALOG: ItemDef[] = [
   { id: "heavys-sandvich", name: "Heavy's Sandvich", icon: "🥪", price: 3, cooldown: 5, effects: { heal: 3 } },
   { id: "emergency-banana", name: "Emergency Banana", icon: "🍌", price: 3, cooldown: 6, effects: { heal: 4 } },
   { id: "s-budget-energy-drink", name: "S-Budget Energy Drink", icon: "🥤", price: 4, cooldown: 7, effects: { heal: 6 } },
+
+
+  // B4: Fire Items
+  { id: "emberlight", name: "Emberlight", icon: "⚔️", price: 3, cooldown: 3, effects: { damage: 2 }, set: "fire" },
+  { id: "fire-cape", name: "Fire Cape", icon: "🔥", price: 3, cooldown: 4, effects: { block: 3 }, set: "fire" },
+  { id: "ghast-fireball", name: "Ghast Fireball", icon: "☄️", price: 5, cooldown: 5, effects: { damage: 3 }, set: "fire" },
+
+  // B4: Defence Bonus Items (Havels Set)
+  { id: "havels-helm", name: "Havel's Helm", icon: "🪖", price: 3, cooldown: 4, effects: { block: 3 }, set: "havel" },
+  { id: "havels-armor", name: "Havel's Armor", icon: "🪨", price: 4, cooldown: 6, effects: { block: 5 }, set: "havel" },
+  { id: "havels-greatshield", name: "Havel's Greatshield", icon: "🛡️", price: 5, cooldown: 7, effects: { damage: 2, block: 4 }, set: "havel" },
+
 ];
 
 const byId = new Map(CATALOG.map((item) => [item.id, item]));
@@ -30,6 +42,7 @@ const EFFECT_LABELS: [keyof ItemEffects, (n: number) => string][] = [
   ["block", (n) => `🛡️ +${n} block`],
   ["poison", (n) => `☠️ +${n} poison`],
   ["heal", (n) => `❤️ +${n} HP`],
+  ["burn", (n) => `🔥 +${n} burn`],
 ];
 
 /** Short labels for an item's effects, e.g. `[{ effect: "damage", label: "⚔️ 2 dmg" }, …]`. */
