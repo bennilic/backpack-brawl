@@ -116,9 +116,23 @@ export interface BattleReplay {
   frame: number;
 }
 
+/** The one opponent search that may currently deliver a result. */
+export interface ActiveSearch {
+  /** Unique across runs (`<gameId>:<n>`), so a late answer from an old run can never match. */
+  id: string;
+  /** The round the search was started for. */
+  round: number;
+}
+
 /** Everything the UI needs: the run plus where in the round loop we are. */
 export interface GameState {
   phase: Phase;
+  /** Identifies this run (its starting seed); part of every search id. */
+  gameId: number;
+  /** How many searches this run has started so far. */
+  searchCount: number;
+  /** Set while `phase === "searching"`; only a result carrying this id is applied. */
+  search: ActiveSearch | null;
   run: RunState;
   /** Set while `phase === "battle"`. */
   battle: BattleReplay | null;

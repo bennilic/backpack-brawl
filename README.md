@@ -102,7 +102,7 @@ Test names tell you what a test is for:
 - `ex:` marks an example that only shows how to write a test (`src/run.test.ts` for the shop rules, `server/opponents.test.ts` for the API's opponent rules).
 - `B1:`, `B2:`, ... mark tests for a functional requirement. The prefix is the requirement ID from `REQUIREMENTS.md`.
 
-`server/index.js` starts a server as soon as it is imported, so server tests target the pure modules next to it.
+`server/index.ts` starts a server as soon as it is imported, so server tests target the pure modules next to it.
 
 ```bash
 pnpm test                          # run all tests once
@@ -165,4 +165,4 @@ Game rules live in plain TypeScript modules that do not depend on React. Every r
 - `src/state/` holds the game state for all pages (`GameProvider`, `useGame`) and `RequireRoute`, which redirects every page to the one matching the current phase.
 - `src/pages/` contains one component per screen; `src/App.tsx` defines the routes.
 - `src/components/` contains the presentational parts: run header, shop, backpack, item card, rules panel, fight bar, battle view and end-of-run screen.
-- `server/index.js` implements the local API; `server/opponents.js` contains the opponent table.
+- `server/index.ts` implements the local API; `server/opponents.ts` contains the opponent table.
