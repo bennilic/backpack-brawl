@@ -60,7 +60,7 @@ export interface FighterSnapshot {
   poison: number; // für B3
 }
 
-export type BattleEventKind = "damage" | "block";
+export type BattleEventKind = "damage" | "block" | "poison" | "heal" | "poison-tick"; // für B3 geändert
 
 export interface BattleEvent {
   tick: number;
@@ -71,7 +71,7 @@ export interface BattleEvent {
   kind: BattleEventKind;
   amount: number;
   /** Item that triggered the event. */
-  itemId: string;
+  itemId: string | null; // null ist für posion-ticks
   message: string;
 }
 

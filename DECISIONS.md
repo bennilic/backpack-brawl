@@ -78,3 +78,25 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
   - Tests use only `describe`, `it` and `expect` from Vitest. `--passWithNoTests` stays as it is.
 - **Reason / trade-offs:** Vitest is already installed and shares the Vite config, so there is no new dependency. Co-location and the prefixes make it visible which tests are examples and which prove a requirement. The cost is that testing goes beyond the manuscript, so the subset is kept small, and that code outside `REQUIREMENTS.md` is not covered on purpose.
 - **Evidence:** `src/run.test.ts`, `server/opponents.test.ts`, `README.md` section *Tests*.
+
+
+
+## D-010: Deterministic Poison and Heal combat rules
+- **Date:** 2026-11-26
+- **Status:** Accepted
+- **Requirement:** B3
+- **Context:** B3 requires Poison and Heal effects, but leaves their exact values and timing to the team. The effects must be deterministic and explained in the interface.
+- **Options:**
+  1. Apply Poison damage every tick or at a fixed interval.
+  2. Let Poison stacks decay or keep them until the battle ends.
+  3. Use fixed Heal values per item or percentage-based healing.
+- **Decision:**
+  - One battle tick represents 0.5 seconds.
+  - Poison deals 1 HP damage per stack every 4 ticks (2 seconds), ignoring block.
+  - Poison stacks accumulate and remain until the battle ends.
+  - Poison items add stacks when their individual cooldown expires.
+  - Item effects are processed before periodic Poison damage within the same tick.
+  - Heal restores a fixed amount of HP, never exceeding the fighter's maximum HP.
+  - Three Poison items and three Heal items use different cooldowns and effect values.
+- **Reason / trade-offs:** Fixed intervals and values make combat deterministic, easy to test and understandable for players. Permanent Poison stacks make the effect increasingly powerful, but can cause a lot of damage in longer battles. Fixed Heal values are simple and easy to predict but less flexible than percentage-based healing. Poison bypasses block as required by B3.
+- **Evidence:** `src/battle.ts`, `src/items.ts`, `src/rules.ts`, `src/components/BattleView.tsx`, `src/battle.test.ts` (3 B3 tests).

@@ -17,6 +17,11 @@ Categories: `Added`, `Changed`, `Fixed`, `Removed`. Prefix entries with the requ
 - Pull-request based workflow rules in `CLAUDE.md`.
 - Exam reference material in `.claude/reference/` (course manuscript, diary guidelines) and project instructions in `CLAUDE.md` (commit `805864a`).
 
+- B3 | Added Poison and Heal combat effects. Poison stacks, deals damage every 4 ticks and ignores block; Heal restores HP up to the fighter's maximum.
+- B3 | Added 3 Poison and 3 Heal items, opponent support, battle status display, combat-log entries, rules and tooltips.
+- B3 | Added `B3:` unit tests for poison stacking and block bypass, healing limits and deterministic battle results.
+
+
 ### Changed
 - `.gitignore` excludes `.claude/settings.local.json` (personal settings).
 
