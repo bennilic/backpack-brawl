@@ -128,3 +128,23 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
 - **Decision:** (b). Saved: phase, run (round, gold, lives, wins, shop seed and offers, backpack) the `gameId` (the run's starting seed, part of every B5 search id) and, in a battle, the opponent and the shown frame. A search in progress is resumed as the shop with `search: null` and `searchCount: 0` (a refresh kills every request in flight, so no answer can arrive; the opponent only depends on the round, nothing was paid, so searching again gives the same opponent). A battle is resumed at the saved frame: the result is not stored but simulated again from backpack and opponent, which is deterministic, so it is the same result; the replay is rebuilt directly from battle.ts because B5's `startBattle` only accepts the answer of a running search for the current round, which a battle saved after its last frame no longer matches; the result is applied to the run exactly once when the last frame is reached, and the already updated run is what gets saved. Saved data is validated field by field (version, types, ranges, known item ids, unique uids, round consistent with wins and lives, phase consistent with the run); anything wrong is deleted and the game starts without a run.
 - **Reason / trade-offs:** Saving after every change means a refresh can never undo a purchase, a reroll or the start of a battle, so no free reroll (the seed is saved), no different opponent, no second result and no escaping a loss. Storing only what cannot be recomputed keeps the save small. Cost: the save lives in the player's browser and can be edited, so a determined player can cheat; the validation only guarantees a playable state, not honesty (acceptable for a local game, and the hall of fame validates on the server in B7). Plain `localStorage` and JSON only (ch. 17 state, ch. 18 offline storage).
 - **Evidence:** `src/save.ts`, `src/save.test.ts`, `src/state/GameProvider.tsx`.
+
+## D-010: Deterministic Poison and Heal combat rules
+- **Date:** 2026-11-26
+- **Status:** Accepted
+- **Requirement:** B3
+- **Context:** B3 requires Poison and Heal effects, but leaves their exact values and timing to the team. The effects must be deterministic and explained in the interface.
+- **Options:**
+  1. Apply Poison damage every tick or at a fixed interval.
+  2. Let Poison stacks decay or keep them until the battle ends.
+  3. Use fixed Heal values per item or percentage-based healing.
+- **Decision:**
+  - One battle tick represents 0.5 seconds.
+  - Poison deals 1 HP damage per stack every 4 ticks (2 seconds), ignoring block.
+  - Poison stacks accumulate and remain until the battle ends.
+  - Poison items add stacks when their individual cooldown expires.
+  - Item effects are processed before periodic Poison damage within the same tick.
+  - Heal restores a fixed amount of HP, never exceeding the fighter's maximum HP.
+  - Three Poison items and three Heal items use different cooldowns and effect values.
+- **Reason / trade-offs:** Fixed intervals and values make combat deterministic, easy to test and understandable for players. Permanent Poison stacks make the effect increasingly powerful, but can cause a lot of damage in longer battles. Fixed Heal values are simple and easy to predict but less flexible than percentage-based healing. Poison bypasses block as required by B3.
+- **Evidence:** `src/battle.ts`, `src/items.ts`, `src/rules.ts`, `src/components/BattleView.tsx`, `src/battle.test.ts` (3 B3 tests).

@@ -1,4 +1,4 @@
-import { HERO_BASE_HP, MAX_TICKS, TICK_SECONDS } from "./battle";
+import { HERO_BASE_HP, MAX_TICKS, TICK_SECONDS, POISON_TICK_INTERVAL } from "./battle";
 import { GOLD_PER_ROUND, REROLL_COST, START_GOLD, START_LIVES, WINS_TO_VICTORY } from "./run";
 import { BACKPACK_COLS, BACKPACK_ROWS, SHOP_SIZE } from "./shop";
 import type { ItemEffects } from "./types";
@@ -14,7 +14,10 @@ const BATTLE_SECONDS = MAX_TICKS * TICK_SECONDS;
 export const EFFECT_HELP: Record<keyof ItemEffects, string> = {
   damage: "Damage: hits the enemy. Block absorbs it first, the rest is lost from HP.",
   block: "Block: absorbs incoming damage until used up. Unused block stays for the rest of the battle.",
+  poison: `Poison: adds stacks to the enemy. Every ${POISON_TICK_INTERVAL * TICK_SECONDS} seconds, each stack deals 1 HP damage, ignoring block. Stacks accumulate and last until the battle ends.`, // für B3
+  heal: "Heal: restores your own HP, but never above your maximum HP.",
 };
+
 
 export const COOLDOWN_HELP = `Cooldown: the item fires every time this much battle time has passed (1 tick = ${TICK_SECONDS} s).`;
 
@@ -22,6 +25,7 @@ export const COOLDOWN_HELP = `Cooldown: the item fires every time this much batt
 export const STATUS_HELP = {
   hp: "HP: reaching 0 is a knockout.",
   block: EFFECT_HELP.block,
+  poison: EFFECT_HELP.poison, // für B3
   timer: `After ${BATTLE_SECONDS} s the fighter with the higher share of HP wins; a tie counts as your loss.`,
 };
 
@@ -56,6 +60,10 @@ export const RULES: RuleSection[] = [
       `Battles run on their own. Your hero has ${HERO_BASE_HP} HP; every item fires whenever its cooldown is up.`,
       `Damage hits block first; only the rest is lost from HP. Unused block stays for the rest of the battle.`,
       `Knock the enemy out to win. ${STATUS_HELP.timer} If both fall at once, you lose.`,
+      // Für B3:
+      `Poison adds stacks to the enemy. Every ${POISON_TICK_INTERVAL * TICK_SECONDS} seconds, each stack deals 1 HP damage directly, ignoring block. Stacks accumulate and do not decay.`,
+      `Heal restores the fighter's own HP, but never above their maximum HP.`,
+
     ],
   },
 ];

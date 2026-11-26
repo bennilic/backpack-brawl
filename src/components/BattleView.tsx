@@ -97,7 +97,7 @@ const EVENT_COLOUR: Partial<Record<BattleEventKind, string>> = {
 };
 
 function LogLine({ event }: { event: BattleEvent }) {
-  const icon = getItem(event.itemId).icon;
+  const icon = event.itemId ? getItem(event.itemId).icon : "☠️"; // für B3
   const byPlayer = event.source === "player";
   const text = (
     <span className={`flex gap-1.5 ${byPlayer ? "" : "flex-row-reverse text-right"} ${EVENT_COLOUR[event.kind] ?? ""}`}>
@@ -123,7 +123,7 @@ interface FighterPanelProps {
 }
 
 function FighterPanel({ side, icon, fighter, snapshot }: FighterPanelProps) {
-  const { hp, maxHp, block } = snapshot;
+  const { hp, maxHp, block, poison } = snapshot; // für B3 auch "poison" hinzugefügt
   const knockedOut = hp <= 0;
 
   return (
@@ -140,6 +140,18 @@ function FighterPanel({ side, icon, fighter, snapshot }: FighterPanelProps) {
 
       <Bar label="HP" value={hp} max={maxHp} text={`${hp} / ${maxHp}`} colour="bg-life" help={STATUS_HELP.hp} />
       <Bar label="Block" value={block} max={maxHp} text={`🛡️ ${block}`} colour="bg-block" help={STATUS_HELP.block} />
+
+
+      <div
+        title={STATUS_HELP.poison}
+        className="flex cursor-help justify-between text-xs text-muted"
+      >
+        <span>Poison</span>
+        <span className="font-mono">
+          ☠️ {poison} {poison === 1 ? "stack" : "stacks"}
+        </span>
+      </div>
+
 
       <ul className="flex flex-wrap gap-1" aria-label="Items">
         {fighter.items.map((item, index) => (
