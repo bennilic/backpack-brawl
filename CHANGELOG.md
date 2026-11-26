@@ -7,6 +7,9 @@ Categories: `Added`, `Changed`, `Fixed`, `Removed`. Prefix entries with the requ
 ## Unreleased
 
 ### Added
+- B6 | Save and resume: the run is stored in `localStorage` after every change and restored on page load on the matching screen; corrupt, incompatible or impossible saves are discarded and the game starts without a run (`src/save.ts`, `src/state/GameProvider.tsx`).
+- B6 | `B6:` unit tests for saving, resuming (shop, search, battle, finished) and rejecting corrupt data.
+- `DECISIONS.md` entry D-007: save policy for B6.
 - B5 | Resilient matchmaking: every search has an id and a round; only one search can run, and duplicate, late, stale or wrong-round answers are ignored (PR #4).
 - B5 | `B5:` unit tests for starting, answering, failing and retrying a search.
 - `DECISIONS.md` entry D-006: search ids in the game state instead of aborting requests.
