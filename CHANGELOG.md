@@ -7,6 +7,9 @@ Categories: `Added`, `Changed`, `Fixed`, `Removed`. Prefix entries with the requ
 ## Unreleased
 
 ### Added
+- B7 | Security hardening: the API binds to `127.0.0.1` and allows CORS only from `http://localhost:5174` (Vite proxy target updated to match); body-parser errors now get accurate messages (invalid JSON, 413, 415, other).
+- B7 | Hall of fame: `GET`/`POST /api/hall-of-fame` with server-side validation (types, ranges, name rules, plausibility, unknown fields, 2 kB body limit), duplicate protection per run, a result-page form to save a run (retry without retyping, never twice), and a `/hall-of-fame` page with loading, empty and error states.
+- B7 | `B7:` unit tests for validation, ordering, store and client helpers; `docs/API.md` documents the endpoints; `DECISIONS.md` entry D-008.
 - B6 | Save and resume: the run is stored in `localStorage` after every change and restored on page load on the matching screen; corrupt, incompatible or impossible saves are discarded and the game starts without a run (`src/save.ts`, `src/state/GameProvider.tsx`).
 - B6 | `B6:` unit tests for saving, resuming (shop, search, battle, finished) and rejecting corrupt data.
 - `DECISIONS.md` entry D-007: save policy for B6.

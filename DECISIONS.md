@@ -88,6 +88,7 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
 - **Decision:** (b), plus a small ref in `ShopPage` that blocks a second click in the same tick. `startSearch` only works in the shop phase and creates `search = { id, round }` (`<gameId>:<n>`). `startBattle` and `searchFailed` apply an answer only while `phase === "searching"` and the id matches. A failure returns the phase to `shop` with the message; an opponent for a different round counts as a failed search.
 - **Reason / trade-offs:** The rules stay pure and testable without timers or `fetch`, and a late answer is harmless even if the request itself could not be cancelled. The id contains the run's starting seed, so an answer from an old run cannot match the new run's `1:1`. The cost is that stale requests still run to completion on the server instead of being cancelled (`AbortController`, manuscript ch. 5/6, could be added). Concepts: immutable state updates and derived guards (ch. 15–17), request races (mystery-road exercise).
 - **Evidence:** `src/game.test.ts` (`B5:` tests), branch `feat/b5-resilient-matchmaking`.
+
 ## D-009: The API server is written in TypeScript and run directly by Node
 - **Date:** 2026-11-23
 - **Status:** Accepted
@@ -105,6 +106,19 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
   - This is a pure refactor: no behaviour of the API changed.
 - **Evidence:** PR "Chore | Convert the API server to TypeScript", `tsconfig.server.json`, `package.json` (`server` script).
 
+## D-008: Hall of fame order, server-side validation and one submission per run
+- **Date:** 2026-11-23
+- **Status:** Accepted
+- **Requirement:** B7
+- **Context:** The hall of fame must rank runs in an order the team defines, reject invalid or implausible data, and never store a run twice. The server stores entries in memory only.
+- **Options:**
+  1. Trust the client's fields (`outcome`, `score`) and sort by a client-sent score.
+  2. The server accepts only raw facts (`wins`, `lives`, `rounds`), checks that they describe a run the game can produce, derives the outcome itself and sorts on those facts.
+  3. Replay the whole run on the server (needs seed and every decision; far beyond B7).
+- **Decision:** Option 2. Order: victory first, then more wins, then fewer rounds, then more lives left, then the earlier submission. Rank is the position (ties are not shared). Plausibility: victory is `wins = 5` and `lives >= 1`, defeat is `lives = 0` and `wins < 5`, and `rounds = wins + (3 - lives)`. Each run carries a `runId` derived from the finished run state; the server stores a `runId` once (same data again: 200 duplicate, other data: 409) and the client also remembers it, so reloads and retries never create a second entry. Names are limited to 20 characters from letters, digits, spaces and `_ . ' -`; bodies to 2 kB; unknown fields are rejected; at most 1000 entries are kept.
+- **Reasons / trade-offs:** The server cannot prove a run really happened (the course material has no signing or replay), so it only rejects what is impossible; a determined player can still submit a perfect-looking fake run. This is accepted for a local, unauthenticated exam app. Against a client-sent score, facts plus a server-side order cannot be gamed by sending a huge number. "Fewer rounds" and "more lives left" mean the same among victories (and rounds are constant among defeats), but both are listed so the rule stays correct if the game rules change. A strict allow-list for names keeps markup out of the stored data in addition to React's escaping. The 1000-entry cap bounds memory; a run that falls off the list can in theory be resubmitted.
+- **Hardening after security review:** the API binds to `127.0.0.1` (not all interfaces) and CORS allows only `http://localhost:5174`, so another website or a LAN host cannot write to the hall. The Vite proxy target is `http://127.0.0.1:4200` to match.
+- **Evidence:** `server/hallOfFame.ts`, `server/hallOfFame.test.ts`, `docs/API.md`.
 ## D-007: Save policy: store the run in `localStorage` after every change, resume a search as the shop, replay a battle from its frame
 - **Date:** 2026-11-23
 - **Status:** Accepted
