@@ -7,6 +7,7 @@ Categories: `Added`, `Changed`, `Fixed`, `Removed`. Prefix entries with the requ
 ## Unreleased
 
 ### Added
+- Docs | Diary: documented D-007 (save policy) as important decision D3.
 - B2 | Backpack arrangement: select items, move them to empty slots, swap occupied slots, highlight valid targets and cancel selections.
 - B2 | Added four unit tests covering moves, swaps, invalid moves and immutable state updates.
 
