@@ -26,7 +26,7 @@ D-002: Pull-request based workflow with a protected default branch
 D-004: Split the requirements between the team members
 
 ## D3
-> TODO - Add important decision here. 
+D-007: Save policy: store the run in `localStorage` after every change, resume a search as the shop, replay a battle from its frame
 
 # Quality Goals
 All quality goals documented by us or AI Tools can be found here:
