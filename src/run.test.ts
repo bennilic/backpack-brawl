@@ -10,7 +10,7 @@
 // `describe`, `it` and `expect` are the three building blocks. They come from Vitest.
 import { describe, expect, it } from "vitest";
 import { getItem } from "./items";
-import { buyBlocker, buyItem, newRun, REROLL_COST, rerollBlocker, rerollShop, sellBlocker, sellItem, sellPrice, START_GOLD } from "./run";
+import { buyBlocker, buyItem, newRun, REROLL_COST, rerollBlocker, rerollShop, sellBlocker, sellItem, sellPrice, START_GOLD, moveBackpackItem} from "./run";
 import { BACKPACK_SIZE, rollShop } from "./shop";
 import type { RunState } from "./types";
 
@@ -190,5 +190,55 @@ describe("B1: buyItem keeps gold and items consistent", () => {
 
     expect(itemCount(afterBuy)).toBe(BACKPACK_SIZE);
     expect(afterBuy.backpack[2]?.itemId).toBe(fullRun.shop[0]);
+  });
+});
+
+// B2-Tests:
+describe("B2: Backpack arrangement", () => {
+  it("Moves an item to an empty slot", () => {
+    const run = runWithBackpack(["chipped-dagger", "pot-lid"]);
+
+    const after = moveBackpackItem(run, 0, 3);
+
+    expect(after.backpack[0]).toBeNull();
+    expect(after.backpack[3]).toBe(run.backpack[0]);
+    expect(after.backpack[1]).toBe(run.backpack[1]);
+
+    // No item was lost or duplicated.
+    expect(itemCount(after)).toBe(itemCount(run));
+  });
+
+  it("Swaps two items when the target slot is occupied", () => {
+    const run = runWithBackpack(["chipped-dagger", "pot-lid"]);
+
+    const after = moveBackpackItem(run, 0, 1);
+
+    expect(after.backpack[0]).toBe(run.backpack[1]);
+    expect(after.backpack[1]).toBe(run.backpack[0]);
+  });
+
+  it("Rejects invalid moves", () => {
+    const run = runWithBackpack(["chipped-dagger", "pot-lid"]);
+
+    // 3 ist ein leerer Slot.
+    expect(moveBackpackItem(run, 3, 0)).toBe(run);
+
+    // Same starting and target slot.
+    expect(moveBackpackItem(run, 0, 0)).toBe(run);
+
+    // Invalid indices.
+    expect(moveBackpackItem(run, -1, 0)).toBe(run);
+    expect(moveBackpackItem(run, 0, 99)).toBe(run);
+    expect(moveBackpackItem(run, 0, 1.5)).toBe(run);
+  });
+
+  it("Does not modify the original state", () => {
+    const run = runWithBackpack(["chipped-dagger", "pot-lid"]);
+    const original = structuredClone(run);
+
+    const after = moveBackpackItem(run, 0, 2);
+
+    expect(run).toEqual(original); // Die selben Werte aber nicht dasselbe Objekt.
+    expect(after.backpack).not.toBe(run.backpack);
   });
 });
