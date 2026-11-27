@@ -158,3 +158,28 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
 - **Decision:** Use two-click selection with highlighted destinations and explicit cancellation.
 - **Reason / trade-offs:** Simpler to implement, test and explain than drag-and-drop, while meeting all B2 requirements.
 - **Evidence:** B2 implementation in `src/run.ts` and `src/components/Backpack.tsx`, four unit tests in `src/run.test.ts`.
+## D-011: Item sets and deterministic Burn mechanics
+
+- **Date:** 2026-11-26
+- **Status:** Accepted
+- **Requirement:** B4
+- **Context:** B4 requires at least two item sets with three items each. Set bonuses must activate with at least two matching items and work for both players and opponents. The Fire set must introduce Burn, a deterministic status effect that is stronger and faster than Poison, respects Block and decays over time.
+- **Options:**
+  1. Increase the Fire set bonus with every additional Fire item, or keep it constant once two items are equipped.
+  2. Apply Burn through individual Fire item activations, or periodically through one active Fire set.
+  3. Grant Havel's Block bonus once per battle, or on every Havel item activation.
+- **Decision:**
+  - Two sets were added: **Fire** (Emberlight, Fire Cape, Ghast Fireball) and **Havel** (Havel's Helm, Havel's Armor, Havel's Greatshield).
+  - A set becomes active with at least two matching items. Bonuses work identically for players and opponents.
+  - **Fire:** An active Fire set applies 2 Burn stacks to the enemy every 4 ticks (2 seconds). The bonus does not increase with a third Fire item.
+  - **Burn:** Every 2 ticks (1 second), each Burn stack deals 2 damage. Block absorbs damage first, and one Burn stack decays after each Burn tick.
+  - **Havel:** Each Havel item activation grants 2 additional Block while the set is active. The bonus per activation does not increase with a third Havel item.
+  - Normal item effects are resolved before Burn & Poison damage within the same tick.
+  - Set badges, active bonuses, Burn stacks and combat events are displayed in the interface. Exact values are explained in the rules panel.
+- **Reason / trade-offs:**
+  - A fixed Fire set bonus makes Burn independent of whether two or three Fire items are equipped. Additional items still contribute their normal effects.
+  - Periodic Burn application keeps the mechanic deterministic & easy to test.
+  - Burn is more aggressive than Poison but can be absorbed by Block and gradually disappears.
+  - Havel's bonus rewards defensive equipment. Additional Havel items can generate more total Block through their individual activations, even though the bonus per activation stays constant.
+  - Fixed values & cooldowns simplify implementation & make the combat rules easier to understand.
+- **Evidence:** `src/items.ts`, `src/types.ts`, `src/battle.ts`, `src/rules.ts`, `src/components/BattleView.tsx`, `src/components/ItemCard.tsx`, `server/opponents.ts`, `src/battle.test.ts` (B4 tests).
