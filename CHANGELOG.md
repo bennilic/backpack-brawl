@@ -7,6 +7,8 @@ Categories: `Added`, `Changed`, `Fixed`, `Removed`. Prefix entries with the requ
 ## Unreleased
 
 ### Added
+- B2 | Backpack arrangement: select items, move them to empty slots, swap occupied slots, highlight valid targets and cancel selections.
+- B2 | Added four unit tests covering moves, swaps, invalid moves and immutable state updates.
 - B7 | Security hardening: the API binds to `127.0.0.1` and allows CORS only from `http://localhost:5174` (Vite proxy target updated to match); body-parser errors now get accurate messages (invalid JSON, 413, 415, other).
 - B7 | Hall of fame: `GET`/`POST /api/hall-of-fame` with server-side validation (types, ranges, name rules, plausibility, unknown fields, 2 kB body limit), duplicate protection per run, a result-page form to save a run (retry without retyping, never twice), and a `/hall-of-fame` page with loading, empty and error states.
 - B7 | `B7:` unit tests for validation, ordering, store and client helpers; `docs/API.md` documents the endpoints; `DECISIONS.md` entry D-008.
