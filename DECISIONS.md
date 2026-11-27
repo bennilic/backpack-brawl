@@ -149,6 +149,15 @@ Entries are never deleted. If a decision changes, add a new entry and set the ol
 - **Reason / trade-offs:** Fixed intervals and values make combat deterministic, easy to test and understandable for players. Permanent Poison stacks make the effect increasingly powerful, but can cause a lot of damage in longer battles. Fixed Heal values are simple and easy to predict but less flexible than percentage-based healing. Poison bypasses block as required by B3.
 - **Evidence:** `src/battle.ts`, `src/items.ts`, `src/rules.ts`, `src/components/BattleView.tsx`, `src/battle.test.ts` (3 B3 tests).
 
+## D-012: Two-click backpack arrangement
+- **Date:** 2026-11-27
+- **Status:** Accepted
+- **Requirement:** B2
+- **Context:** Players need to move and swap backpack items using a clear interface.
+- **Options:** Drag-and-drop or two-click selection.
+- **Decision:** Use two-click selection with highlighted destinations and explicit cancellation.
+- **Reason / trade-offs:** Simpler to implement, test and explain than drag-and-drop, while meeting all B2 requirements.
+- **Evidence:** B2 implementation in `src/run.ts` and `src/components/Backpack.tsx`, four unit tests in `src/run.test.ts`.
 ## D-011: Item sets and deterministic Burn mechanics
 
 - **Date:** 2026-11-26

@@ -26,6 +26,47 @@ export function firstFreeSlot(state: RunState): number {
   return state.backpack.indexOf(null);
 }
 
+
+/** B2: Move an item to another slot or swap two items. */
+export function moveBackpackItem(
+  state: RunState,
+  fromIndex: number,
+  toIndex: number
+): RunState {
+  const backpack = state.backpack;
+
+  // Check whether both positions are valid.
+  if (
+    !Number.isInteger(fromIndex) ||
+    !Number.isInteger(toIndex) ||
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= backpack.length ||
+    toIndex >= backpack.length
+  ) {
+    return state;
+  }
+
+  // Nothing to move or same slot selected.
+  if (backpack[fromIndex] === null || fromIndex === toIndex) {
+    return state;
+  }
+
+  // Copy the backpack to avoid modifying the original state.
+  const newBackpack = [...backpack];
+
+  // Swap the items (also works if the target slot is empty).
+  const temp = newBackpack[fromIndex];
+  newBackpack[fromIndex] = newBackpack[toIndex];
+  newBackpack[toIndex] = temp;
+
+  return {
+    ...state,
+    backpack: newBackpack,
+  };
+}
+
+
 /** Why an offer can't be bought right now, or `null` if it can. */
 export function buyBlocker(state: RunState, offerIndex: number): string | null {
   const itemId = state.shop[offerIndex];

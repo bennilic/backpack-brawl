@@ -7,6 +7,8 @@ Categories: `Added`, `Changed`, `Fixed`, `Removed`. Prefix entries with the requ
 ## Unreleased
 
 ### Added
+- B2 | Backpack arrangement: select items, move them to empty slots, swap occupied slots, highlight valid targets and cancel selections.
+- B2 | Added four unit tests covering moves, swaps, invalid moves and immutable state updates.
 
 - B4 | Added Fire and Havel item sets with 3 new items each. Set bonuses activate when at least 2 items of the same set are equipped, for both players and opponents.
 - B4 | Added deterministic set bonuses: Fire applies 2 Burn stacks every 4 ticks, regardless of whether 2 or 3 Fire items are equipped. Havel grants +2 additional Block per Havel item activation.

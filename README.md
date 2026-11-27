@@ -27,7 +27,7 @@ A won battle gives +1 win, a lost battle costs one life. The run ends with a vic
 - **Sell** removes an item from the backpack and pays half its price, rounded down.
 - **Reroll** pays 1 🪙 and rolls 4 new offers (sold offers included). You can't reroll without gold.
 - Shop and backpack actions are only possible while you are shopping, not while an opponent is being searched.
-- The backpack is a **2×3 grid** (2 columns, 3 rows, 6 slots), and every item takes exactly one slot. A bought item stays in its slot until you sell it. Hover over an item to see its details.
+- The backpack is a **2×3 grid** (6 slots). Click an item to select it, then click another slot to move or swap it. Valid targets are highlighted. Click the selected item again or use Cancel selection to cancel. Hover over items to see their details.
 - Only items in the backpack fight. Their position in the grid does not matter.
 
 Shop rolls are driven by a seeded random number generator stored in the run state, so the same seed always produces the same offers.
