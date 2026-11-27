@@ -7,6 +7,11 @@ Categories: `Added`, `Changed`, `Fixed`, `Removed`. Prefix entries with the requ
 ## Unreleased
 
 ### Added
+
+- B4 | Added Fire and Havel item sets with 3 new items each. Set bonuses activate when at least 2 items of the same set are equipped, for both players and opponents.
+- B4 | Added deterministic set bonuses: Fire applies 2 Burn stacks every 4 ticks, regardless of whether 2 or 3 Fire items are equipped. Havel grants +2 additional Block per Havel item activation.
+- B4 | Added Burn damage and decay: every 2 ticks, each Burn stack deals 2 damage, which is absorbed by Block first. After each Burn tick, 1 stack decays.
+- B4 | Added set badges in the shop and battle view, active bonus indicators, Burn counters, combat-log messages, rules and tooltips. Updated opponent equipment and added B4 unit tests.
 - B7 | Security hardening: the API binds to `127.0.0.1` and allows CORS only from `http://localhost:5174` (Vite proxy target updated to match); body-parser errors now get accurate messages (invalid JSON, 413, 415, other).
 - B7 | Hall of fame: `GET`/`POST /api/hall-of-fame` with server-side validation (types, ranges, name rules, plausibility, unknown fields, 2 kB body limit), duplicate protection per run, a result-page form to save a run (retry without retyping, never twice), and a `/hall-of-fame` page with loading, empty and error states.
 - B7 | `B7:` unit tests for validation, ordering, store and client helpers; `docs/API.md` documents the endpoints; `DECISIONS.md` entry D-008.
@@ -28,7 +33,6 @@ Categories: `Added`, `Changed`, `Fixed`, `Removed`. Prefix entries with the requ
 - `CHANGELOG.md` and `DECISIONS.md` to track changes and engineering decisions.
 - Pull-request based workflow rules in `CLAUDE.md`.
 - Exam reference material in `.claude/reference/` (course manuscript, diary guidelines) and project instructions in `CLAUDE.md` (commit `805864a`).
-
 - B3 | Added Poison and Heal combat effects. Poison stacks, deals damage every 4 ticks and ignores block; Heal restores HP up to the fighter's maximum.
 - B3 | Added 3 Poison and 3 Heal items, opponent support, battle status display, combat-log entries, rules and tooltips.
 - B3 | Added `B3:` unit tests for poison stacking and block bypass, healing limits and deterministic battle results.

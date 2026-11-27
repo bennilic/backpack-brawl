@@ -1,6 +1,6 @@
 import { getItem } from "./items";
 import { itemIdsOf } from "./shop";
-import type { Backpack, BattleEvent, BattleResult, Fighter, FighterItem, FighterSnapshot, Opponent, Side } from "./types";
+import type { Backpack, BattleEvent, BattleResult, Fighter, FighterItem, FighterSnapshot, ItemSet, Opponent, Side } from "./types";
 
 
 /** Seconds per battle tick. */
@@ -14,11 +14,25 @@ export const HERO_BASE_HP = 40;
 export const POISON_TICK_INTERVAL = 4;
 
 
+// B4: Fire set and Burn rules
+export const FIRE_APPLY_INTERVAL = 4;
+export const FIRE_STACKS_PER_APPLY = 2;
+export const BURN_TICK_INTERVAL = 2;
+export const BURN_DAMAGE_PER_STACK = 2;
+
+
+/** B4: A set is active when the fighter owns at least 2 items of that set. */
+export function hasActiveSet(fighter: Fighter, set: ItemSet): boolean {
+  const count = fighter.items.filter((item) => item.set === set).length;
+  return count >= 2; // true or false
+}
+
+
 /** Turns a list of item ids into a fighter with the catalog values of each item. */
 export function buildFighter(itemIds: string[], baseHp: number, name = "Fighter"): Fighter {
   const items: FighterItem[] = itemIds.map((id) => {
     const def = getItem(id);
-    return { itemId: def.id, name: def.name, icon: def.icon, cooldown: def.cooldown, effects: { ...def.effects } };
+    return { itemId: def.id, name: def.name, icon: def.icon, cooldown: def.cooldown, effects: { ...def.effects }, set: def.set };
   });
   return { name, maxHp: baseHp, items };
 }
@@ -37,6 +51,7 @@ interface FighterState {
   hp: number;
   block: number;
   poison: number; // für B3
+  burn: number; // B4: Current burn stacks
   /** Ticks each item has charged towards its cooldown. */
   charge: number[];
 }
@@ -47,7 +62,8 @@ const snapshot = (s: FighterState): FighterSnapshot => ({
   hp: Math.max(0, s.hp),
   maxHp: s.fighter.maxHp,
   block: s.block,
-  poison: s.poison
+  poison: s.poison, // für B3
+  burn: s.burn, // für B4: Die aktuellen Burn-Stacks
 });
 
 const isDown = (s: FighterState) => s.hp <= 0;
@@ -94,6 +110,60 @@ export function simulateBattle(player: Fighter, opponent: Fighter): BattleResult
       for (const item of fired[side]) resolveItem(item, state[side], state[other(side)], side, emit);
     }
 
+
+    // B4: An active Fire set applies 2 burn stacks every 4 ticks.
+    if (tick % FIRE_APPLY_INTERVAL === 0) {
+      for (const side of ["player", "opponent"] as const) {
+        const attacker = state[side];
+        const enemySide = other(side);
+        const enemy = state[enemySide];
+
+        if (hasActiveSet(attacker.fighter, "fire")) {
+          enemy.burn += FIRE_STACKS_PER_APPLY;
+
+          emit({
+            source: side,
+            target: enemySide,
+            kind: "burn",
+            amount: FIRE_STACKS_PER_APPLY,
+            itemId: null,
+            message: `${attacker.fighter.name}'s Fire set adds ${FIRE_STACKS_PER_APPLY} burn stacks to ${enemy.fighter.name}`,
+          });
+        }
+      }
+    }
+
+    // B4: Burn deals damage every 2 ticks and loses 1 stack.
+    if (tick % BURN_TICK_INTERVAL === 0) {
+      for (const side of ["player", "opponent"] as const) {
+        const fighter = state[side];
+
+        if (fighter.burn > 0 && fighter.hp > 0) {
+          const damage = fighter.burn * BURN_DAMAGE_PER_STACK;
+
+          // Unlike poison, burn damage hits block first.
+          const absorbed = Math.min(fighter.block, damage);
+          fighter.block -= absorbed;
+
+          const hpDamage = Math.min(fighter.hp, damage - absorbed);
+          fighter.hp -= hpDamage;
+
+          // One burn stack disappears after each burn tick.
+          fighter.burn = Math.max(0, fighter.burn - 1);
+
+          emit({
+            source: other(side),
+            target: side,
+            kind: "burn-tick",
+            amount: hpDamage,
+            itemId: null,
+            message: `${fighter.fighter.name} takes ${hpDamage} burn damage (${absorbed} blocked); 1 burn stack decays (${fighter.burn} remaining)`,
+          });
+        }
+      }
+    }
+
+
     // B3: Poison Schadensblock - Apply and log poison damage every 4 ticks.
     if (tick % POISON_TICK_INTERVAL === 0) {
       for (const side of ["player", "opponent"] as const) {
@@ -127,7 +197,7 @@ export function simulateBattle(player: Fighter, opponent: Fighter): BattleResult
 }
 
 function initState(fighter: Fighter): FighterState {
-  return { fighter, hp: fighter.maxHp, block: 0, poison: 0, charge: fighter.items.map(() => 0) };
+  return { fighter, hp: fighter.maxHp, block: 0, poison: 0,  burn: 0, charge: fighter.items.map(() => 0) }; // für B3 auch "poison" hinzugefügt, für B4 auch "burn" hinzugefügt
 }
 
 /** Advances one tick of cooldowns and returns the items that fire this tick. */
@@ -161,9 +231,28 @@ function resolveItem(
     const note = absorbed > 0 ? ` (${absorbed} blocked)` : "";
     emit({ ...base, target: enemySide, kind: "damage", amount: damage, message: `${item.name} hits ${enemy.fighter.name} for ${damage}${note}` });
   }
-  if (block) {
-    self.block += block;
-    emit({ ...base, target: side, kind: "block", amount: block, message: `${item.name} grants ${self.fighter.name} ${block} block` });
+
+  // B4: Havel's Set grants +2 block when a Havel item activates.
+  const havelBonus =
+    item.set === "havel" && hasActiveSet(self.fighter, "havel")
+      ? 2
+      : 0;
+
+  const totalBlock = (block ?? 0) + havelBonus;
+
+  if (totalBlock > 0) {
+    self.block += totalBlock;
+
+    const bonusText =
+      havelBonus > 0 ? " (+2 Havel set bonus)" : "";
+
+    emit({
+      ...base,
+      target: side,
+      kind: "block",
+      amount: totalBlock,
+      message: `${item.name} grants ${self.fighter.name} ${totalBlock} block${bonusText}`,
+    });
   }
 
   // B3: poison effect
